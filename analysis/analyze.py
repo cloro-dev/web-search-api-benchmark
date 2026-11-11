@@ -1,4 +1,4 @@
-"""Analyse one benchmark run folder. Usage: analyze.py <run folder> <verticalrtk|freshqa>"""
+"""Analyse one benchmark run folder. Usage: analyze.py <run folder> <verticalrtk|freshqa|frames|sealqa|finsearchcomp|obnews>"""
 import glob, json, math, os, re, statistics, sys
 from collections import defaultdict, Counter
 
@@ -6,8 +6,14 @@ OUT, DS = sys.argv[1], sys.argv[2]
 PROVS = ["cloro", "serpapi", "tavily", "exa", "parallel", "brave"]
 NAMES = {"cloro": "cloro", "serpapi": "SerpApi", "tavily": "Tavily", "exa": "Exa", "parallel": "Parallel", "brave": "Brave"}
 # Same text-match approach as the SimpleQA analysis: dataset names plus dataset hosts.
-LEAK = (["verticalrtk", "vertical-rtk", "vertical_rtk", "takodata", "trytako"] if DS == "verticalrtk"
-        else ["freshqa", "fresh_qa", "fresh-qa", "freshllms", "freshprompt"]) + ["huggingface.co/datasets", "kaggle.com"]
+LEAK = {
+    "verticalrtk": ["verticalrtk", "vertical-rtk", "vertical_rtk", "takodata", "trytako"],
+    "freshqa": ["freshqa", "fresh_qa", "fresh-qa", "freshllms", "freshprompt"],
+    "frames": ["frames-benchmark", "frames benchmark", "google/frames"],
+    "sealqa": ["sealqa", "seal-qa", "seal_qa", "seal-0", "vtllms"],
+    "finsearchcomp": ["finsearchcomp", "byteseedxpert"],
+    "obnews": ["openbenchmarks", "ob-news"],
+}[DS] + ["huggingface.co/datasets", "kaggle.com"]
 
 
 def wilson(c, n, z=1.96):
