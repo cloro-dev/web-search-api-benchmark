@@ -3,8 +3,8 @@
 An open benchmark of six web search APIs for AI agents and RAG pipelines:
 accuracy, cost per 1,000 searches and latency of cloro, SerpApi, Tavily, Exa,
 Parallel and Brave Search API, on SimpleQA Verified (1,000 questions),
-FreshQA (358 questions) and VerticalRTK (138 questions). Every provider got
-one search per question, the same reader model and the same grader, in
+FreshQA (358 questions) and FRAMES (824 multi-hop questions). Every provider
+got one search per question, the same reader model and the same grader, in
 November 2026. The code, the settings and every graded answer are in this
 repo.
 
@@ -16,9 +16,9 @@ repo.
 - **Most accurate on FreshQA (questions whose answer changes over time):**
   SerpApi 88.5% and cloro 88.3%, then Brave 84.9%, Exa 83.0%, Parallel 82.7%
   and Tavily 81.8%.
-- **Most accurate on VerticalRTK (recent figures on companies, markets,
-  health and government):** Exa 71.7% and Parallel 68.8%, then SerpApi 58.7%,
-  cloro 58.0%, Brave 54.3% and Tavily 50.7%.
+- **Most accurate on FRAMES (multi-hop questions that need several
+  sources):** cloro 80.2% and SerpApi 77.4%, then Parallel 65.3%, Exa 64.0%,
+  Brave 53.9% and Tavily 48.4%.
 - **Lowest cost per 1,000 searches at 100,000 searches a month:** cloro $1.92,
   then Parallel, Brave and Tavily at $5, Exa at $7 and SerpApi at $7.25.
   SerpApi needed two searches on most questions.
@@ -36,9 +36,9 @@ three were significantly more accurate than SerpApi (94.7%), Brave Search API
 model (`gpt-5.6-luna`) answered from its results.
 
 Which API is "most accurate" depends on the question type. On questions about
-recent events (FreshQA), SerpApi and cloro lead. On recent business and market
-figures (VerticalRTK), Exa and Parallel lead. No API was first on all three
-datasets.
+recent events (FreshQA), SerpApi and cloro lead. On multi-hop questions
+(FRAMES), cloro leads, ahead of SerpApi in a paired test (p = 0.02), and the
+four independent indexes answer "not found" on 151 to 295 of 824 questions.
 
 ## Results table
 
@@ -47,20 +47,20 @@ list price per 1,000 searches on the plan that covers 100,000 searches a
 month. Latency is the p50
 of the search request alone, on SimpleQA Verified.
 
-| Search API | SimpleQA Verified (1,000) | FreshQA (358) | VerticalRTK (138) | $ per 1,000 searches | p50 latency |
+| Search API | SimpleQA Verified (1,000) | FreshQA (358) | FRAMES (824) | $ per 1,000 searches | p50 latency |
 |---|---|---|---|---|---|
-| Parallel | 97.8% (96.7-98.5) | 82.7% (78.4-86.2) | 68.8% (60.7-76.0) | $5.00 | 2.99 s |
-| Exa | 97.3% (96.1-98.1) | 83.0% (78.7-86.5) | 71.7% (63.7-78.6) | $7.00 | 0.74 s |
-| cloro | 96.9% (95.6-97.8) | 88.3% (84.5-91.2) | 58.0% (49.6-65.9) | $1.92 | 10.96 s |
-| SerpApi | 94.7% (93.1-95.9) | 88.5% (84.8-91.4) | 58.7% (50.4-66.6) | $7.25 | 8.20 s |
-| Brave Search API | 93.1% (91.4-94.5) | 84.9% (80.8-88.3) | 54.3% (46.0-62.4) | $5.00 | 1.21 s |
-| Tavily | 91.8% (89.9-93.3) | 81.8% (77.5-85.5) | 50.7% (42.5-58.9) | $5.00 | 2.00 s |
+| Parallel | 97.8% (96.7-98.5) | 82.7% (78.4-86.2) | 65.3% (62.0-68.5) | $5.00 | 2.99 s |
+| Exa | 97.3% (96.1-98.1) | 83.0% (78.7-86.5) | 64.0% (60.6-67.2) | $7.00 | 0.74 s |
+| cloro | 96.9% (95.6-97.8) | 88.3% (84.5-91.2) | 80.2% (77.4-82.8) | $1.92 | 10.96 s |
+| SerpApi | 94.7% (93.1-95.9) | 88.5% (84.8-91.4) | 77.4% (74.4-80.2) | $7.25 | 8.20 s |
+| Brave Search API | 93.1% (91.4-94.5) | 84.9% (80.8-88.3) | 53.9% (50.5-57.3) | $5.00 | 1.21 s |
+| Tavily | 91.8% (89.9-93.3) | 81.8% (77.5-85.5) | 48.4% (45.0-51.8) | $5.00 | 2.00 s |
 
 The full reports, with the paired tests, the leak check, the questions with
 possibly wrong gold answers and the run costs, are in [`runs/`](runs):
 [SimpleQA Verified](runs/simpleqa-2026-11/report.md),
 [FreshQA](runs/freshqa-2026-11/report.md),
-[VerticalRTK](runs/verticalrtk-2026-11/report.md).
+[FRAMES](runs/frames-2026-11/report.md).
 
 ## Which search API is the most accurate on fresh, time-sensitive questions?
 
@@ -71,10 +71,17 @@ significantly more accurate than Tavily (81.8%, p = 0.0004), Exa (83.0%,
 p = 0.0009) and Parallel (82.7%, p = 0.0012). The gap to Brave Search API
 (84.9%) was not significant (p = 0.065).
 
-On VerticalRTK, 138 questions on recent figures for companies, governments,
-markets and health, Exa (71.7%) and Parallel (68.8%) were the most accurate.
-Both were significantly more accurate than cloro (58.0%; p = 0.0003 and
-p = 0.0015). Every API missed more than a quarter of these questions.
+## Which search API is the most accurate on multi-hop questions?
+
+On FRAMES, 824 questions that need facts from two or more Wikipedia pages,
+cloro (80.2%) was the most accurate web search API, ahead of SerpApi (77.4%,
+paired p = 0.022) and of Parallel (65.3%), Exa (64.0%), Brave Search API
+(53.9%) and Tavily (48.4%), each at p < 0.001. With one search, Parallel, Exa,
+Brave and Tavily answered "not found" on 151 to 295 questions. Given an
+answer, five of the six APIs were correct 78% to 81% of the time, so the gap
+comes from how many questions one results page can answer at all. FRAMES is
+usually run with an agent that searches many times; this run measures one
+search.
 
 ## How much does a web search API cost per 1,000 searches?
 
@@ -122,23 +129,23 @@ under 3 seconds, cloro and SerpApi are not the right choice today.
 Paired exact McNemar tests on the same questions. "Wins" is the number of
 questions one API answered correctly and the other did not.
 
-| Comparison | SimpleQA Verified | FreshQA | VerticalRTK |
+| Comparison | SimpleQA Verified | FreshQA | FRAMES |
 |---|---|---|---|
-| Exa vs Tavily | Exa, 72 wins to 17 (p < 0.0001) | no difference (p = 0.67) | Exa, 31 to 2 (p < 0.0001) |
-| Brave vs Tavily | no difference (p = 0.25) | no difference (p = 0.12) | no difference (p = 0.46) |
-| Exa vs Parallel | no difference (p = 0.38) | no difference (p = 1.0) | no difference (p = 0.39) |
-| Exa vs Brave | Exa, 55 to 13 (p < 0.0001) | no difference (p = 0.32) | Exa, 30 to 6 (p = 0.0001) |
-| Parallel vs Tavily | Parallel, 72 to 12 (p < 0.0001) | no difference (p = 0.77) | Parallel, 26 to 1 (p < 0.0001) |
-| cloro vs SerpApi | cloro, 33 to 11 (p = 0.0013) | no difference (p = 1.0) | no difference (p = 1.0) |
-| cloro vs Tavily | cloro, 70 to 19 (p < 0.0001) | cloro, 32 to 9 (p = 0.0004) | no difference (p = 0.064) |
-| cloro vs Brave | cloro, 50 to 12 (p < 0.0001) | no difference (p = 0.065) | no difference (p = 0.42) |
-| cloro vs Exa | no difference (p = 0.63) | cloro, 25 to 6 (p = 0.0009) | Exa, 23 to 4 (p = 0.0003) |
-| cloro vs Parallel | no difference (p = 0.15) | cloro, 28 to 8 (p = 0.0012) | Parallel, 18 to 3 (p = 0.0015) |
+| Exa vs Tavily | Exa, 72 wins to 17 (p < 0.0001) | no difference (p = 0.67) | Exa, 197 to 69 (p < 0.0001) |
+| Brave vs Tavily | no difference (p = 0.25) | no difference (p = 0.12) | Brave, 147 to 102 (p = 0.0052) |
+| Exa vs Parallel | no difference (p = 0.38) | no difference (p = 1.0) | no difference (p = 0.48) |
+| Exa vs Brave | Exa, 55 to 13 (p < 0.0001) | no difference (p = 0.32) | Exa, 139 to 56 (p < 0.0001) |
+| Parallel vs Tavily | Parallel, 72 to 12 (p < 0.0001) | no difference (p = 0.77) | Parallel, 209 to 70 (p < 0.0001) |
+| cloro vs SerpApi | cloro, 33 to 11 (p = 0.0013) | no difference (p = 1.0) | cloro, 58 to 35 (p = 0.022) |
+| cloro vs Tavily | cloro, 70 to 19 (p < 0.0001) | cloro, 32 to 9 (p = 0.0004) | cloro, 297 to 35 (p < 0.0001) |
+| cloro vs Brave | cloro, 50 to 12 (p < 0.0001) | no difference (p = 0.065) | cloro, 248 to 31 (p < 0.0001) |
+| cloro vs Exa | no difference (p = 0.63) | cloro, 25 to 6 (p = 0.0009) | cloro, 179 to 45 (p < 0.0001) |
+| cloro vs Parallel | no difference (p = 0.15) | cloro, 28 to 8 (p = 0.0012) | cloro, 172 to 49 (p < 0.0001) |
 
 ### Tavily vs Exa: which is more accurate?
 
 Exa was more accurate than Tavily on SimpleQA Verified (97.3% against 91.8%)
-and on VerticalRTK (71.7% against 50.7%), and the two tied on FreshQA (83.0%
+and on FRAMES (64.0% against 48.4%), and the two tied on FreshQA (83.0%
 against 81.8%). Exa was also faster (0.74 s p50 against 2.00 s) and cost more
 ($7 against $5 per 1,000 searches).
 
@@ -147,8 +154,8 @@ against 81.8%). Exa was also faster (0.74 s p50 against 2.00 s) and cost more
 In this benchmark cloro matched or beat SerpApi on every dataset at about a
 quarter of the price per search: 96.9% against 94.7% on SimpleQA Verified
 (paired p = 0.0013), 88.3%
-against 88.5% on FreshQA and 58.0% against 58.7% on VerticalRTK (no
-difference on either), at $1.92 against $7.25 per 1,000 searches, and
+against 88.5% on FreshQA (no difference) and 80.2% against 77.4% on FRAMES
+(paired p = 0.022), at $1.92 against $7.25 per 1,000 searches, and
 SerpApi needed a second search on most questions. Both are
 slow: cloro's p50 latency was 10.96 s and SerpApi's 8.20 s.
 
@@ -157,7 +164,8 @@ slow: cloro's p50 latency was 10.96 s and SerpApi's 8.20 s.
 This benchmark is a small RAG pipeline: one search, the top 10 results into
 the context window, one LLM answer grounded only on those results. For
 factual questions, Parallel, Exa and cloro gave the most correct answers. For
-time-sensitive questions, SerpApi and cloro did. For the lowest cost per
+time-sensitive questions, SerpApi and cloro did. For multi-hop questions,
+cloro did. For the lowest cost per
 correct answer, cloro. For latency under 1 second, Exa. Run the harness on 50
 to 100 of your own questions before you choose, because the order changed
 between the three datasets.
@@ -171,7 +179,7 @@ Every provider got the same setup:
 2. **10 results,** in the provider's default search mode.
 3. **The same reader.** One LLM (`gpt-5.6-luna`) reads at most 30,000
    characters of search results and gives a short answer from those results
-   only, or "NOT FOUND". For FreshQA and VerticalRTK the prompt gives today's
+   only, or "NOT FOUND". For FreshQA and FRAMES the prompt gives today's
    date, and for FreshQA it asks the reader to point out a false premise.
 4. **The same grader.** One LLM (`gpt-5.6-sol`) grades each answer CORRECT,
    INCORRECT or NOT_ATTEMPTED with the OpenAI simple-evals grader prompt
@@ -191,9 +199,7 @@ The answer features that providers sell as separate options (Tavily
 `include_answer`, Exa `summary`) are off, because they are not part of a
 default search response.
 
-Dropped rows: VerticalRTK keeps 138 of 155 rows (17 have a capture timestamp
-or a forecast that changes within hours). FreshQA uses the April 21, 2026
-test split without fast-changing rows and rows past their review date, which
+Dropped rows: FreshQA uses the April 21, 2026 test split without fast-changing rows and rows past their review date, which
 leaves 358.
 
 Metrics: accuracy is correct answers over all questions, with a failed search
@@ -240,8 +246,18 @@ python3 benchmark.py --providers cloro,serpapi,tavily,exa,parallel,brave --n 100
 
 Run `--n 3` first to find a broken key before you spend the budget.
 
-- `--dataset simpleqa|verticalrtk|freshqa` selects the dataset (default
-  `simpleqa`).
+- `--dataset simpleqa|verticalrtk|freshqa|frames|sealqa|finsearchcomp|obnews`
+  selects the dataset (default `simpleqa`).
+- `--as-of YYYY-MM-DD` sets the date in the reader prompt and the FreshQA
+  filter (default: today). Use the date of an earlier run to read its saved
+  responses again with the same questions.
+- The cloro variants `cloro-reread`, `cloro-drop-aio`, `cloro-organic`,
+  `cloro-json`, `cloro-top5`, `cloro-aio-only`, `cloro-aio-last`,
+  `cloro-no-snippet`, `cloro-no-url`, `cloro-no-title`, `cloro-minimal` and
+  `cloro-2p-page1` make no
+  search call. They read the saved
+  raw responses of `cloro` (or `cloro-2p`) in the same `--out` folder, so run
+  that provider first. `cloro-2p` asks for two Google result pages.
 - `--search-only` measures latency with no LLM calls.
 - `--out <folder>` sets the run folder. Results go to
   `<folder>/results/<provider>.jsonl` and raw responses to
@@ -251,9 +267,11 @@ Run `--n 3` first to find a broken key before you spend the budget.
   run: the harness writes an ERROR row and continues, so watch the log.
 - `python3 benchmark.py --summary --out runs/simpleqa-2026-11` prints the
   results table of a run again.
-- `python3 analysis/analyze.py <run folder> <verticalrtk|freshqa>` prints
-  per-topic accuracy, the questions that 4 or more providers miss, and the
-  leak check.
+- `python3 analysis/analyze.py <run folder> <dataset>` prints per-topic
+  accuracy, the questions that 4 or more providers miss, and the leak check
+  (all datasets except `simpleqa`).
+- `python3 analysis/sensitivity.py <run folder> cloro:cloro-organic` compares
+  two result files on the same questions, with an exact McNemar test.
 
 A full SimpleQA run (1,000 questions, 6 providers) used about 7,000 cloro
 credits, 1,970 SerpApi searches, 1,000 Tavily credits, $7.00 of Exa, 1,000
@@ -283,13 +301,13 @@ the difference between search APIs.
 [SimpleQA Verified](https://huggingface.co/datasets/google/simpleqa-verified)
 (1,000 short factual questions), [FreshQA](https://github.com/freshllms/freshqa)
 (358 questions whose answers change over time, including false-premise
-questions) and the [VerticalRTK](https://github.com/TakoData/VerticalRTK)
-fast set (138 questions on recent figures).
+questions) and [FRAMES](https://huggingface.co/datasets/google/frames-benchmark) (824
+multi-hop questions that need facts from several Wikipedia pages).
 
 ### When was the benchmark run?
 
-SimpleQA Verified on November 4 and 5, 2026, FreshQA and VerticalRTK on
-November 5, 2026. Prices were read on November 5, 2026.
+SimpleQA Verified on November 4 and 5, 2026, FreshQA on November 5, 2026,
+FRAMES on November 10 and 11, 2026. Prices were read on November 5, 2026.
 
 ## How to cite
 
@@ -307,8 +325,8 @@ That text stays under the license of its source:
 |---|---|---|---|
 | SimpleQA Verified | [google/simpleqa-verified](https://huggingface.co/datasets/google/simpleqa-verified) | MIT | None |
 | FreshQA | [freshllms/freshqa](https://github.com/freshllms/freshqa), version of April 21, 2026 | Apache-2.0 (repository) | Test split only, without the fast-changing questions and the questions past their review date |
-| VerticalRTK | [TakoData/VerticalRTK](https://github.com/TakoData/VerticalRTK), fast set, commit f3f8628 | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | Without the 17 questions that have a capture timestamp or a forecast |
+| FRAMES | [google/frames-benchmark](https://huggingface.co/datasets/google/frames-benchmark), `test.tsv` | Apache-2.0 | None |
 
 If you use these datasets, cite their authors as their pages ask: the
-SimpleQA Verified technical report, the FreshLLMs paper (arXiv:2310.03214) and
-VerticalRTK by Tako.
+SimpleQA Verified technical report, the FreshLLMs paper (arXiv:2310.03214)
+and the FRAMES paper (arXiv:2409.12941).
