@@ -60,7 +60,9 @@ The full reports, with the paired tests, the leak check, the questions with
 possibly wrong gold answers and the run costs, are in [`runs/`](runs):
 [SimpleQA Verified](runs/simpleqa-2026-11/report.md),
 [FreshQA](runs/freshqa-2026-11/report.md),
-[FRAMES](runs/frames-2026-11/report.md).
+[FRAMES](runs/frames-2026-11/report.md). The tests of which parts of a
+search result give the accuracy are in the
+[sensitivity report](runs/sensitivity-2026-11/report.md).
 
 ## Which search API is the most accurate on fresh, time-sensitive questions?
 
@@ -169,6 +171,19 @@ cloro did. For the lowest cost per
 correct answer, cloro. For latency under 1 second, Exa. Run the harness on 50
 to 100 of your own questions before you choose, because the order changed
 between the three datasets.
+
+## Which parts of a search result give the accuracy?
+
+We kept cloro's saved responses for 100 SimpleQA Verified questions and
+changed only what the reader could read. The AI Overview gave most of the
+accuracy: 99% with it, 86% without it (13 questions lost, none gained,
+p < 0.001). The snippets gave most of the rest: the AI Overview and the
+snippets alone scored 99% with 37% fewer reader tokens. Titles, links, results
+6 to 10, a second results page, the full JSON response and the text of the
+result pages added tokens and no significant accuracy. A second reader model and a second
+grader gave the same results. The tables, the preliminary FreshQA numbers and
+the commands are in the
+[sensitivity report](runs/sensitivity-2026-11/report.md).
 
 ## How the benchmark works
 
@@ -304,6 +319,13 @@ the difference between search APIs.
 questions) and [FRAMES](https://huggingface.co/datasets/google/frames-benchmark) (824
 multi-hop questions that need facts from several Wikipedia pages).
 
+### Which part of a search result helps an AI agent answer correctly?
+
+The AI Overview. On 100 SimpleQA Verified questions, the reader answered 99%
+correctly with it and 86% without it, from the same results. The snippets
+carry most of the rest. See the
+[sensitivity report](runs/sensitivity-2026-11/report.md).
+
 ### When was the benchmark run?
 
 SimpleQA Verified on November 4 and 5, 2026, FreshQA on November 5, 2026,
@@ -312,7 +334,10 @@ FRAMES on November 10 and 11, 2026. Prices were read on November 5, 2026.
 ## How to cite
 
 cloro, "Web Search API Benchmark 2026", November 2026,
-https://github.com/cloro-dev/web-search-api-benchmark. Results are also on
+https://github.com/cloro-dev/web-search-api-benchmark. The results and the
+sensitivity tests are written up at
+[cloro.dev/blog/web-search-api-benchmark](https://cloro.dev/blog/web-search-api-benchmark/),
+and compared with other search APIs at
 [cloro.dev/blog/best-search-api](https://cloro.dev/blog/best-search-api/).
 
 ## License and data sources
