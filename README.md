@@ -23,7 +23,7 @@ repo.
   then Parallel, Brave and Tavily at $5, Exa at $7 and SerpApi at $7.25.
   SerpApi needed two searches on most questions.
 - **Fastest (p50 search latency):** Exa 0.74 s, Brave 1.21 s, Tavily 2.00 s,
-  Parallel 2.99 s. SerpApi (8.20 s) and cloro (10.96 s) are the slowest.
+  Parallel 2.99 s. cloro (7.96 s) and SerpApi (8.20 s) are the slowest.
 
 ## Which web search API is the most accurate for AI agents?
 
@@ -51,7 +51,7 @@ of the search request alone, on SimpleQA Verified.
 |---|---|---|---|---|---|
 | Parallel | 97.8% (96.7-98.5) | 82.7% (78.4-86.2) | 65.3% (62.0-68.5) | $5.00 | 2.99 s |
 | Exa | 97.3% (96.1-98.1) | 83.0% (78.7-86.5) | 64.0% (60.6-67.2) | $7.00 | 0.74 s |
-| cloro | 96.9% (95.6-97.8) | 88.3% (84.5-91.2) | 80.2% (77.4-82.8) | $1.92 | 10.96 s |
+| cloro | 96.9% (95.6-97.8) | 88.3% (84.5-91.2) | 80.2% (77.4-82.8) | $1.92 | 7.96 s |
 | SerpApi | 94.7% (93.1-95.9) | 88.5% (84.8-91.4) | 77.4% (74.4-80.2) | $7.25 | 8.20 s |
 | Brave Search API | 93.1% (91.4-94.5) | 84.9% (80.8-88.3) | 53.9% (50.5-57.3) | $5.00 | 1.21 s |
 | Tavily | 91.8% (89.9-93.3) | 81.8% (77.5-85.5) | 48.4% (45.0-51.8) | $5.00 | 2.00 s |
@@ -120,9 +120,9 @@ SerpApi have the same accuracy, and cloro costs 73% less per search.
 
 Exa was the fastest web search API in this benchmark, with a p50 search
 latency of 0.74 s on SimpleQA Verified. Brave Search API took 1.21 s, Tavily
-2.00 s and Parallel 2.99 s. SerpApi (8.20 s) and cloro (10.96 s) were the
-slowest. These figures come from the 615 questions per provider that ran with
-no other benchmark at the same time, 4 requests in parallel, from one machine.
+2.00 s and Parallel 2.99 s. cloro (7.96 s) and SerpApi (8.20 s) were the
+slowest. These figures come from runs with no other benchmark at the same
+time, 4 requests in parallel, from one machine.
 Latency is the search request only, without the LLM. If you need answers in
 under 3 seconds, cloro and SerpApi are not the right choice today.
 
@@ -159,7 +159,7 @@ quarter of the price per search: 96.9% against 94.7% on SimpleQA Verified
 against 88.5% on FreshQA (no difference) and 80.2% against 77.4% on FRAMES
 (paired p = 0.022), at $1.92 against $7.25 per 1,000 searches, and
 SerpApi needed a second search on most questions. Both are
-slow: cloro's p50 latency was 10.96 s and SerpApi's 8.20 s.
+slow: cloro's p50 latency was 7.96 s and SerpApi's 8.20 s.
 
 ## Which search API is best for a RAG pipeline?
 
