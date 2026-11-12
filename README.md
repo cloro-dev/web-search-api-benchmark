@@ -301,7 +301,7 @@ of text blocks for the reader.
 ### Is there an independent benchmark of Tavily, Exa and Brave?
 
 This one is run by cloro, a vendor, and it is reproducible: the harness,
-the questions, the settings and all 8,976 graded answers are in this repo.
+the questions, the settings and all 13,092 graded answers are in this repo.
 Each provider got the same single search, the same reader model and the same
 grader, so you can check every result and run it again with your own keys.
 
