@@ -1,5 +1,22 @@
 # Web Search API Benchmark 2026: Tavily vs Exa vs Parallel vs Brave vs SerpApi vs cloro
 
+Parallel, Exa and cloro are the most accurate web search APIs for AI agents in
+this benchmark of 2,182 questions, and the order changes with the question
+type: the three tie on short factual questions, SerpApi and cloro lead on
+recent events, and cloro leads on multi-hop questions.
+
+Accuracy by question type, one search per question, with the 95% interval in
+brackets:
+
+| Search API | Short factual: SimpleQA Verified (1,000) | Recent events: FreshQA (358) | Multi-hop: FRAMES (824) |
+|---|---|---|---|
+| Parallel | 97.8% (96.7-98.5) | 82.7% (78.4-86.2) | 65.3% (62.0-68.5) |
+| Exa | 97.3% (96.1-98.1) | 83.0% (78.7-86.5) | 64.0% (60.6-67.2) |
+| cloro | 96.9% (95.6-97.8) | 88.3% (84.5-91.2) | 80.2% (77.4-82.8) |
+| SerpApi | 94.7% (93.1-95.9) | 88.5% (84.8-91.4) | 77.4% (74.4-80.2) |
+| Brave Search API | 93.1% (91.4-94.5) | 84.9% (80.8-88.3) | 53.9% (50.5-57.3) |
+| Tavily | 91.8% (89.9-93.3) | 81.8% (77.5-85.5) | 48.4% (45.0-51.8) |
+
 An open benchmark of six web search APIs for AI agents and RAG pipelines:
 accuracy, cost per 1,000 searches and latency of cloro, SerpApi, Tavily, Exa,
 Parallel and Brave Search API, on SimpleQA Verified (1,000 questions),
