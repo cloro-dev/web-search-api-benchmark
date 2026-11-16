@@ -42,7 +42,7 @@ repo.
 - **Fastest (p50 search latency):** Exa 0.74 s, Brave 1.21 s, Tavily 2.00 s,
   Parallel 2.99 s. cloro (7.96 s) and SerpApi (8.20 s) are the slowest.
 
-## Which web search API is the most accurate for AI agents?
+## What is the most accurate web search API for AI agents?
 
 On SimpleQA Verified, 1,000 short factual questions, the most accurate web
 search APIs in this benchmark were Parallel (97.8%), Exa (97.3%) and cloro
@@ -104,9 +104,11 @@ search.
 
 ## How much does a web search API cost per 1,000 searches?
 
-On each provider's cheapest self-serve plan that covers 100,000 searches a
-month, the plan price divided by what the plan includes (list prices read on
-November 5, 2026):
+The cheapest web search API in this benchmark is cloro, at $1.92 per 1,000
+searches on a plan for 100,000 searches a month. The table gives each
+provider's cheapest self-serve plan that covers 100,000 searches a month, the
+plan price divided by what the plan includes (list prices read on November 5,
+2026):
 
 | Search API | $ per 1,000 searches | Plan and request | Free tier |
 |---|---|---|---|
@@ -125,6 +127,38 @@ price matches the `costDollars` field of its own responses
 ($0.007 a request with highlights). Prices change: check each provider's
 pricing page before you buy.
 
+## Which web search APIs have a free tier?
+
+All six web search APIs in this benchmark have a free tier, and Exa's
+monthly tier buys the most searches with the request used here: $10 of
+credits a month, about 1,428 searches at $7 per 1,000. Of the five that say
+whether they need a card, Parallel and Brave do.
+
+| Search API | Free allowance | Refill | Searches with the benchmark's request | Card needed |
+|---|---|---|---|---|
+| Exa | $10 of credits, plus $10 once after onboarding | Resets to $10 on the 1st of each month | About 1,428 (`auto`, $7 per 1,000) | No |
+| Parallel | $5 of credits with a card on file, up to 5,000 requests; up to $80 once at sign-up | Monthly ($5) | 1,000 in the default mode ($5 per 1,000) | Yes, for the $5 |
+| Brave Search API | $5 of credits on the Search plan | Monthly | 1,000 ($5 per 1,000) | Yes, "to prevent abuse" |
+| Tavily | 1,000 API credits | Monthly | 1,000 basic searches (1 credit each) | No |
+| SerpApi | 250 searches, 50 an hour | Monthly | 250 (a SimpleQA question took about 1.97 searches) | Not stated |
+| cloro | 500 credits, 1 request at a time | Monthly | 100 at 5 credits (Google Search with the AI Overview); 166 Google searches without it, at 3 credits each | No |
+
+Sources, all read on November 16, 2026:
+[exa.ai/pricing](https://exa.ai/pricing),
+[parallel.ai/pricing](https://parallel.ai/pricing),
+[brave.com/search/api](https://brave.com/search/api/),
+[tavily.com/pricing](https://www.tavily.com/pricing) and
+[docs.tavily.com/documentation/api-credits](https://docs.tavily.com/documentation/api-credits),
+[serpapi.com/pricing](https://serpapi.com/pricing),
+[cloro.dev/pricing](https://cloro.dev/pricing/) and the
+[cloro billing guide](https://cloro.dev/docs/guides/billing). A sync cloro
+request adds 2 credits, so 500 credits make 71 sync searches with the AI
+Overview.
+
+A free tier answers "What is the cheapest web search API?" only up to these
+volumes. Past them, the number to compare is the price per 1,000 searches in
+[How much does a web search API cost per 1,000 searches?](#how-much-does-a-web-search-api-cost-per-1000-searches).
+
 ## Which search API gives the most accuracy per dollar?
 
 cloro had the lowest cost per correct answer on SimpleQA Verified and FreshQA.
@@ -133,7 +167,7 @@ against $5.11 for Parallel, $7.19 for Exa, $5.37 for Brave, $5.45 for Tavily
 and $15.08 for SerpApi (1.97 searches a question). On FreshQA, cloro and
 SerpApi have the same accuracy, and cloro costs 73% less per search.
 
-## How fast is each web search API?
+## What is the fastest web search API?
 
 Exa was the fastest web search API in this benchmark, with a p50 search
 latency of 0.74 s on SimpleQA Verified. Brave Search API took 1.21 s, Tavily
