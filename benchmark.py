@@ -59,8 +59,9 @@ another provider in the same --out folder, so run that provider first:
   cloro-desc-only raw/cloro, the organic descriptions only (no AI Overview, titles or links)
   cloro-pages-top5-only raw/cloro, only the crawled page text of the top 5 organic links
 
-Reader and grader: OPENAI_API_KEY, READER_MODEL, GRADER_MODEL. A model name that
-starts with "gemini" uses GEMINI_API_KEY and the Gemini OpenAI-compatible endpoint.
+Reader and grader: GEMINI_API_KEY, READER_MODEL, GRADER_MODEL. Both default to
+gemini-pro-latest, through the Gemini OpenAI-compatible endpoint. A model name
+that does not start with "gemini" uses OPENAI_API_KEY and the OpenAI endpoint.
 With --search-only, no LLM is called: the run measures latency only.
 
 Usage (from the repo root):
@@ -104,8 +105,8 @@ DATASET_URLS = {
     "obnews": "https://huggingface.co/datasets/openbenchmarks/OB-News-Websearch/resolve/main/data/eval.jsonl",
 }
 GRADER_TEMPLATE = open(os.path.join(HERE, "grader_template.txt")).read().strip()
-READER_MODEL = os.environ.get("READER_MODEL", "gpt-5.6-luna")
-GRADER_MODEL = os.environ.get("GRADER_MODEL", "gpt-5.6-sol")
+READER_MODEL = os.environ.get("READER_MODEL", "gemini-pro-latest")
+GRADER_MODEL = os.environ.get("GRADER_MODEL", "gemini-pro-latest")
 NUM_RESULTS = 10
 MAX_CONTEXT_CHARS = 30000  # same cap for every provider
 MAX_CONTEXT = MAX_CONTEXT_CHARS  # or --max-context-chars

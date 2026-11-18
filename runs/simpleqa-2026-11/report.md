@@ -1,5 +1,9 @@
 # SimpleQA Verified, 1,000 questions, 6 search APIs
 
+> On 2026-11-18 Gemini (`gemini-pro-latest`) graded every answer again. The
+> grades in `results/` are the Gemini grades, and the numbers below are the
+> first grades. See the [regrade report](../regrade-gemini-2026-11/report.md).
+
 Run: 2026-11-04 to 2026-11-05, `benchmark.py`, seed 42,
 all 1,000 questions, `--workers 4`, from one laptop. Reader `gpt-5.6-luna`,
 grader `gpt-5.6-sol`. One search per question. The calls are interleaved

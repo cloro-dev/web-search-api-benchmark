@@ -1,5 +1,9 @@
 # FreshQA, 358 questions, 6 search APIs
 
+> On 2026-11-18 Gemini (`gemini-pro-latest`) graded every answer again. The
+> grades in `results/` are the Gemini grades, and the numbers below are the
+> first grades. See the [regrade report](../regrade-gemini-2026-11/report.md).
+
 Run: 2026-11-05, `benchmark.py --dataset freshqa`,
 seed 42, all 358 kept TEST rows of FreshQA (April 21, 2026 version;
 fast-changing rows and rows past `next_review` dropped), `--workers 4`.

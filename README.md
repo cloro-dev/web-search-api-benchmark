@@ -1,78 +1,73 @@
 # Web Search API Benchmark 2026: Tavily vs Exa vs Parallel vs Brave vs SerpApi vs Perplexity vs Firecrawl vs cloro
 
-Parallel, Exa, Perplexity and cloro are the most accurate web search APIs for
-AI agents on short factual questions in this benchmark of 2,182 questions, and
-the order changes with the question type: SerpApi and cloro lead on recent
-events, and cloro leads on multi-hop questions.
+Parallel, Perplexity, Exa and cloro are the most accurate web search APIs
+for AI agents on short factual questions in this benchmark of 2,182
+questions, and the order changes with the question type: SerpApi and cloro
+lead on recent events, and cloro scores highest on multi-hop questions.
 
 Accuracy by question type, one search per question, with the 95% interval in
 brackets:
 
 | Search API | Short factual: SimpleQA Verified (1,000) | Recent events: FreshQA (358) | Multi-hop: FRAMES (824) |
 |---|---|---|---|
-| Parallel | 97.8% (96.7-98.5) | 82.7% (78.4-86.2) | 65.3% (62.0-68.5) |
-| Exa | 97.3% (96.1-98.1) | 83.0% (78.7-86.5) | 64.0% (60.6-67.2) |
-| cloro | 96.9% (95.6-97.8) | 88.3% (84.5-91.2) | 80.2% (77.4-82.8) |
-| SerpApi | 94.7% (93.1-95.9) | 88.5% (84.8-91.4) | 77.4% (74.4-80.2) |
-| Brave Search API | 93.1% (91.4-94.5) | 84.9% (80.8-88.3) | 53.9% (50.5-57.3) |
-| Tavily | 91.8% (89.9-93.3) | 81.8% (77.5-85.5) | 48.4% (45.0-51.8) |
+| Parallel | 97.8% (96.7-98.5) | 82.1% (77.8-85.7) | 65.7% (62.3-68.8) |
 | Perplexity Search API\* | 97.5% (96.3-98.3) | 84.1% (79.9-87.5) | 62.9% (59.5-66.1) |
-| Firecrawl | not run | not run | 43.4% (40.1-46.9) |
+| Exa | 97.3% (96.1-98.1) | 82.7% (78.4-86.2) | 63.8% (60.5-67.0) |
+| cloro | 97.1% (95.9-98.0) | 88.0% (84.2-91.0) | 80.2% (77.4-82.8) |
+| SerpApi | 95.0% (93.5-96.2) | 88.3% (84.5-91.2) | 78.2% (75.2-80.8) |
+| Brave Search API | 93.0% (91.2-94.4) | 84.6% (80.5-88.0) | 53.9% (50.5-57.3) |
+| Tavily | 91.7% (89.8-93.3) | 81.3% (76.9-85.0) | 48.2% (44.8-51.6) |
+| Firecrawl | 91.7% (89.8-93.3) | 79.9% (75.4-83.7) | 43.4% (40.1-46.9) |
 
-\* Perplexity ran again on November 18, 2026, on all 2,182 questions, with
-huggingface.co and kaggle.com excluded through its Search API domain filter,
-because those sites host copies of the benchmark datasets with the answers.
-Gemini (`gemini-pro-latest`) graded these answers; `gpt-5.6-sol` graded the
-other APIs. The first Perplexity run, without the filter, is in
-[its report](runs/perplexity-firecrawl-2026-11/report.md), and the rerun is in
-[this report](runs/perplexity-rerun-2026-11/report.md).
+\* Perplexity's searches exclude huggingface.co and kaggle.com, which host
+copies of the benchmark datasets. In its first run, without the filter, its
+results held the answer from a dataset page on 471 of 1,000 SimpleQA Verified
+questions. The other APIs return such a page on a smaller share of questions
+and run without the filter; each report has the leak check. The first
+Perplexity run is in [its report](runs/perplexity-firecrawl-2026-11/report.md),
+and the filtered run in [this report](runs/perplexity-rerun-2026-11/report.md).
 
-An open benchmark of six web search APIs for AI agents and RAG pipelines:
+An open benchmark of eight web search APIs for AI agents and RAG pipelines:
 accuracy, cost per 1,000 searches and latency of cloro, SerpApi, Tavily, Exa,
-Parallel and Brave Search API, on SimpleQA Verified (1,000 questions),
-FreshQA (358 questions) and FRAMES (824 multi-hop questions). Every provider
-got one search per question, the same reader model and the same grader, in
-November 2026. Perplexity Search API and Firecrawl were added later with the
-same reader ([report](runs/perplexity-firecrawl-2026-11/report.md)).
-Perplexity has a domain filter and a different grader (see the note above). The code,
+Parallel, Brave Search API, Perplexity Search API and Firecrawl, on SimpleQA
+Verified (1,000 questions), FreshQA (358 questions) and FRAMES (824 multi-hop
+questions). Every provider got one search per question, the same reader model
+and the same grader, Gemini (`gemini-pro-latest`), in November 2026. The code,
 the settings and every graded answer are in this repo.
 
 ## Summary
 
-- **Most accurate on SimpleQA Verified:** Parallel 97.8%, Exa 97.3% and cloro
-  96.9%. The three are within the margin of error of each other. SerpApi
-  scored 94.7%, Brave 93.1% and Tavily 91.8%.
+- **Most accurate on SimpleQA Verified:** Parallel 97.8%, Perplexity 97.5%,
+  Exa 97.3% and cloro 97.1%. The four are within the margin of error of each
+  other. SerpApi scored 95.0%, Brave 93.0%, and Tavily and Firecrawl 91.7%.
 - **Most accurate on FreshQA (questions whose answer changes over time):**
-  SerpApi 88.5% and cloro 88.3%, then Brave 84.9%, Exa 83.0%, Parallel 82.7%
-  and Tavily 81.8%.
+  SerpApi 88.3% and cloro 88.0%, then Brave 84.6%, Perplexity 84.1%, Exa
+  82.7%, Parallel 82.1%, Tavily 81.3% and Firecrawl 79.9%.
 - **Most accurate on FRAMES (multi-hop questions that need several
-  sources):** cloro 80.2% and SerpApi 77.4%, then Parallel 65.3%, Exa 64.0%,
-  Brave 53.9% and Tavily 48.4%.
+  sources):** cloro 80.2%, then SerpApi 78.2%, Parallel 65.7%, Exa 63.8%, Perplexity 62.9%, Brave 53.9%,
+  Tavily 48.2% and Firecrawl 43.4%.
 - **Lowest cost per 1,000 searches at 100,000 searches a month:** cloro $1.92,
-  then Parallel, Brave and Tavily at $5, Exa at $7 and SerpApi at $7.25.
-  SerpApi needed two searches on most questions.
-- **Fastest (p50 search latency):** Perplexity 0.34 s, Exa 0.74 s, Brave
-  1.21 s, Tavily 2.00 s, Parallel 2.99 s. cloro (7.96 s) and SerpApi (8.20 s)
-  are the slowest.
-- **Perplexity Search API and Firecrawl (added November 18, 2026):** Perplexity
-  tied cloro, Parallel and Exa on SimpleQA Verified (97.5%), scored 84.1% on
-  FreshQA and 62.9% on FRAMES, at $5 per 1,000 searches.
-  Firecrawl scored 43.4% on FRAMES, the lowest of the eight, at $3.49.
+  then Firecrawl $3.49, Parallel, Brave, Tavily and Perplexity at $5, Exa at
+  $7 and SerpApi at $7.25. SerpApi needed two searches on most questions.
+- **Fastest (p50 search latency):** Perplexity 0.34 s, Exa 0.74 s, Firecrawl
+  0.93 s, Brave 1.21 s, Tavily 2.00 s, Parallel 2.99 s. cloro (7.96 s) and
+  SerpApi (8.20 s) are the slowest.
 
 ## What is the most accurate web search API for AI agents?
 
 On SimpleQA Verified, 1,000 short factual questions, the most accurate web
-search APIs in this benchmark were Parallel (97.8%), Exa (97.3%) and cloro
-(96.9%). A paired test on the same questions finds no significant difference
-between them (cloro against Parallel p = 0.15, against Exa p = 0.63). The
-three were significantly more accurate than SerpApi (94.7%), Brave Search API
-(93.1%) and Tavily (91.8%). Each API got one search per question, and the same
-model (`gpt-5.6-luna`) answered from its results.
+search APIs in this benchmark were Parallel (97.8%), Perplexity (97.5%), Exa
+(97.3%) and cloro (97.1%). A paired test on the same questions finds no
+significant difference between them (cloro against Parallel p = 0.30, against
+Perplexity p = 0.60, against Exa p = 0.87). Each of the four was significantly
+more accurate than SerpApi (95.0%), Brave Search API (93.0%), Tavily (91.7%)
+and Firecrawl (91.7%). Each API got one search per question, and the same
+model answered from its results.
 
 Which API is "most accurate" depends on the question type. On questions about
 recent events (FreshQA), SerpApi and cloro lead. On multi-hop questions
-(FRAMES), cloro leads, ahead of SerpApi in a paired test (p = 0.02), and the
-four independent indexes answer "not found" on 151 to 295 of 824 questions.
+(FRAMES), cloro scores highest (80.2%), and Parallel, Exa, Perplexity, Brave, Tavily and Firecrawl answer
+"not found" on 148 to 326 of 824 questions.
 
 ## Results table
 
@@ -83,46 +78,51 @@ of the search request alone, on SimpleQA Verified.
 
 | Search API | SimpleQA Verified (1,000) | FreshQA (358) | FRAMES (824) | $ per 1,000 searches | p50 latency |
 |---|---|---|---|---|---|
-| Parallel | 97.8% (96.7-98.5) | 82.7% (78.4-86.2) | 65.3% (62.0-68.5) | $5.00 | 2.99 s |
-| Exa | 97.3% (96.1-98.1) | 83.0% (78.7-86.5) | 64.0% (60.6-67.2) | $7.00 | 0.74 s |
-| cloro | 96.9% (95.6-97.8) | 88.3% (84.5-91.2) | 80.2% (77.4-82.8) | $1.92 | 7.96 s |
-| SerpApi | 94.7% (93.1-95.9) | 88.5% (84.8-91.4) | 77.4% (74.4-80.2) | $7.25 | 8.20 s |
-| Brave Search API | 93.1% (91.4-94.5) | 84.9% (80.8-88.3) | 53.9% (50.5-57.3) | $5.00 | 1.21 s |
-| Tavily | 91.8% (89.9-93.3) | 81.8% (77.5-85.5) | 48.4% (45.0-51.8) | $5.00 | 2.00 s |
+| Parallel | 97.8% (96.7-98.5) | 82.1% (77.8-85.7) | 65.7% (62.3-68.8) | $5.00 | 2.99 s |
 | Perplexity Search API\* | 97.5% (96.3-98.3) | 84.1% (79.9-87.5) | 62.9% (59.5-66.1) | $5.00 | 0.34 s |
-| Firecrawl | not run | not run | 43.4% (40.1-46.9) | $3.49 | 3.62 s (FRAMES) |
+| Exa | 97.3% (96.1-98.1) | 82.7% (78.4-86.2) | 63.8% (60.5-67.0) | $7.00 | 0.74 s |
+| cloro | 97.1% (95.9-98.0) | 88.0% (84.2-91.0) | 80.2% (77.4-82.8) | $1.92 | 7.96 s |
+| SerpApi | 95.0% (93.5-96.2) | 88.3% (84.5-91.2) | 78.2% (75.2-80.8) | $7.25 | 8.20 s |
+| Brave Search API | 93.0% (91.2-94.4) | 84.6% (80.5-88.0) | 53.9% (50.5-57.3) | $5.00 | 1.21 s |
+| Tavily | 91.7% (89.8-93.3) | 81.3% (76.9-85.0) | 48.2% (44.8-51.6) | $5.00 | 2.00 s |
+| Firecrawl | 91.7% (89.8-93.3) | 79.9% (75.4-83.7) | 43.4% (40.1-46.9) | $3.49 | 0.93 s |
 
-\* With huggingface.co and kaggle.com excluded, graded by Gemini. See the
-note under the first table.
+\* With huggingface.co and kaggle.com excluded. See the note under the first
+table.
 
 The full reports, with the paired tests, the leak check, the questions with
 possibly wrong gold answers and the run costs, are in [`runs/`](runs):
 [SimpleQA Verified](runs/simpleqa-2026-11/report.md),
 [FreshQA](runs/freshqa-2026-11/report.md),
-[FRAMES](runs/frames-2026-11/report.md). The tests of which parts of a
+[FRAMES](runs/frames-2026-11/report.md). The Gemini grades and the Firecrawl
+runs on SimpleQA Verified and FreshQA are in the
+[regrade report](runs/regrade-gemini-2026-11/report.md). The tests of which parts of a
 search result give the accuracy are in the
 [sensitivity report](runs/sensitivity-2026-11/report.md).
 
 ## Which search API is the most accurate on fresh, time-sensitive questions?
 
 On FreshQA, 358 questions whose answers can change over time (a third of them
-with a false premise), SerpApi (88.5%) and cloro (88.3%) were the most accurate
+with a false premise), SerpApi (88.3%) and cloro (88.0%) were the most accurate
 web search APIs, with no difference between them (paired p = 1.0). cloro was
-significantly more accurate than Tavily (81.8%, p = 0.0004), Exa (83.0%,
-p = 0.0009) and Parallel (82.7%, p = 0.0012). The gap to Brave Search API
-(84.9%) was not significant (p = 0.065).
+significantly more accurate than Firecrawl (79.9%, p = 0.0001), Tavily
+(81.3%, p = 0.0004), Exa (82.7%, p = 0.0009), Parallel (82.1%, p = 0.0011)
+and Perplexity (84.1%, p = 0.020). The gap to Brave Search API (84.6%) was
+not significant (p = 0.065).
 
 ## Which search API is the most accurate on multi-hop questions?
 
 On FRAMES, 824 questions that need facts from two or more Wikipedia pages,
-cloro (80.2%) was the most accurate web search API, ahead of SerpApi (77.4%,
-paired p = 0.022) and of Parallel (65.3%), Exa (64.0%), Brave Search API
-(53.9%) and Tavily (48.4%), each at p < 0.001. With one search, Parallel, Exa,
-Brave and Tavily answered "not found" on 151 to 295 questions. Given an
-answer, five of the six APIs were correct 78% to 81% of the time, so the gap
-comes from how many questions one results page can answer at all. FRAMES is
-usually run with an agent that searches many times; this run measures one
-search.
+cloro (80.2%) and SerpApi (78.2%) were the most accurate web search APIs. The
+paired test finds no significant difference between them (cloro 53 wins to
+36, p = 0.089). Both were ahead of Parallel (65.7%), Exa (63.8%), Perplexity
+(62.9%), Brave Search API (53.9%), Tavily (48.2%) and Firecrawl (43.4%), each
+at p < 0.001. With one search, Parallel, Exa, Perplexity, Brave, Tavily and
+Firecrawl answered "not found" on 148 to 326 questions. Given an answer,
+cloro, SerpApi and Parallel were correct 80.5% to 81.2% of the time and the
+other five 71.9% to 77.8%, so most of the gap comes from how many questions
+one results page can answer at all. FRAMES is usually run with an agent that
+searches many times; this run measures one search.
 
 ## How much does a web search API cost per 1,000 searches?
 
@@ -188,19 +188,21 @@ volumes. Past them, the number to compare is the price per 1,000 searches in
 ## Which search API gives the most accuracy per dollar?
 
 cloro had the lowest cost per correct answer on SimpleQA Verified and FreshQA.
-cloro costs $1.98 per 1,000 correct SimpleQA answers ($1.92 / 96.9%),
-against $5.11 for Parallel, $7.19 for Exa, $5.37 for Brave, $5.45 for Tavily
-and $15.08 for SerpApi (1.97 searches a question). On FreshQA, cloro and
-SerpApi have the same accuracy, and cloro costs 73% less per search.
+cloro costs $1.98 per 1,000 correct SimpleQA answers ($1.92 / 97.1%),
+against $3.81 for Firecrawl, $5.11 for Parallel, $5.13 for Perplexity, $5.38
+for Brave, $5.45 for Tavily, $7.19 for Exa and $15.03 for SerpApi (1.97
+searches a question). On FreshQA, cloro and SerpApi have the same accuracy,
+and cloro costs 73% less per search.
 
 ## What is the fastest web search API?
 
 Perplexity Search API was the fastest web search API in this benchmark, with a
-p50 search latency of 0.34 s on SimpleQA Verified (run on November 18). Exa
-took 0.74 s, Brave Search API 1.21 s, Tavily
-2.00 s and Parallel 2.99 s. cloro (7.96 s) and SerpApi (8.20 s) were the
-slowest. These figures come from runs with no other benchmark at the same
-time, 4 requests in parallel, from one machine.
+p50 search latency of 0.34 s on SimpleQA Verified. Exa took 0.74 s,
+Firecrawl 0.93 s, Brave Search API 1.21 s, Tavily 2.00 s and Parallel 2.99 s.
+cloro (7.96 s) and SerpApi (8.20 s) were the slowest. These figures come from
+runs with no other benchmark at the same time, from one machine, 4 requests in
+parallel. Firecrawl ran 1 request at a time, because its rate limit returned
+HTTP 429 at 4.
 Latency is the search request only, without the LLM. If you need answers in
 under 3 seconds, cloro and SerpApi are not the right choice today.
 
@@ -211,46 +213,43 @@ questions one API answered correctly and the other did not.
 
 | Comparison | SimpleQA Verified | FreshQA | FRAMES |
 |---|---|---|---|
-| Exa vs Tavily | Exa, 72 wins to 17 (p < 0.0001) | no difference (p = 0.67) | Exa, 197 to 69 (p < 0.0001) |
-| Brave vs Tavily | no difference (p = 0.25) | no difference (p = 0.12) | Brave, 147 to 102 (p = 0.0052) |
-| Exa vs Parallel | no difference (p = 0.38) | no difference (p = 1.0) | no difference (p = 0.48) |
-| Exa vs Brave | Exa, 55 to 13 (p < 0.0001) | no difference (p = 0.32) | Exa, 139 to 56 (p < 0.0001) |
-| Parallel vs Tavily | Parallel, 72 to 12 (p < 0.0001) | no difference (p = 0.77) | Parallel, 209 to 70 (p < 0.0001) |
-| cloro vs SerpApi | cloro, 33 to 11 (p = 0.0013) | no difference (p = 1.0) | cloro, 58 to 35 (p = 0.022) |
-| cloro vs Tavily | cloro, 70 to 19 (p < 0.0001) | cloro, 32 to 9 (p = 0.0004) | cloro, 297 to 35 (p < 0.0001) |
-| cloro vs Brave | cloro, 50 to 12 (p < 0.0001) | no difference (p = 0.065) | cloro, 248 to 31 (p < 0.0001) |
-| cloro vs Exa | no difference (p = 0.63) | cloro, 25 to 6 (p = 0.0009) | cloro, 179 to 45 (p < 0.0001) |
-| cloro vs Parallel | no difference (p = 0.15) | cloro, 28 to 8 (p = 0.0012) | cloro, 172 to 49 (p < 0.0001) |
-| cloro vs Perplexity\* | no difference (p = 0.38) | cloro, 24 to 9 (p = 0.014) | cloro, 199 to 56 (p < 0.0001) |
-| cloro vs Firecrawl | not run | not run | cloro, 321 to 18 (p < 0.0001) |
-
-\* The Perplexity rerun with the domain filter, graded by Gemini; the other
-API is graded by `gpt-5.6-sol`.
+| Exa vs Tavily | Exa, 72 wins to 16 (p < 0.0001) | no difference (p = 0.56) | Exa, 198 to 69 (p < 0.0001) |
+| Brave vs Tavily | no difference (p = 0.25) | no difference (p = 0.081) | Brave, 148 to 101 (p = 0.0035) |
+| Exa vs Parallel | no difference (p = 0.36) | no difference (p = 0.86) | no difference (p = 0.32) |
+| Exa vs Brave | Exa, 55 to 12 (p < 0.0001) | no difference (p = 0.30) | Exa, 139 to 57 (p < 0.0001) |
+| Parallel vs Tavily | Parallel, 73 to 12 (p < 0.0001) | no difference (p = 0.77) | Parallel, 211 to 67 (p < 0.0001) |
+| Firecrawl vs Tavily | no difference (p = 1.0) | no difference (p = 0.56) | Tavily, 136 to 97 (p = 0.013) |
+| cloro vs SerpApi | cloro, 31 to 10 (p = 0.0015) | no difference (p = 1.0) | no difference (p = 0.089) |
+| cloro vs Tavily | cloro, 73 to 19 (p < 0.0001) | cloro, 34 to 10 (p = 0.0004) | cloro, 296 to 32 (p < 0.0001) |
+| cloro vs Brave | cloro, 52 to 11 (p < 0.0001) | no difference (p = 0.065) | cloro, 250 to 33 (p < 0.0001) |
+| cloro vs Exa | no difference (p = 0.87) | cloro, 25 to 6 (p = 0.0009) | cloro, 179 to 44 (p < 0.0001) |
+| cloro vs Parallel | no difference (p = 0.30) | cloro, 30 to 9 (p = 0.0011) | cloro, 170 to 50 (p < 0.0001) |
+| cloro vs Perplexity | no difference (p = 0.60) | cloro, 23 to 9 (p = 0.020) | cloro, 197 to 54 (p < 0.0001) |
+| cloro vs Firecrawl | cloro, 68 to 14 (p < 0.0001) | cloro, 41 to 12 (p = 0.0001) | cloro, 320 to 17 (p < 0.0001) |
 
 ### Tavily vs Exa: which is more accurate?
 
-Exa was more accurate than Tavily on SimpleQA Verified (97.3% against 91.8%)
-and on FRAMES (64.0% against 48.4%), and the two tied on FreshQA (83.0%
-against 81.8%). Exa was also faster (0.74 s p50 against 2.00 s) and cost more
+Exa was more accurate than Tavily on SimpleQA Verified (97.3% against 91.7%)
+and on FRAMES (63.8% against 48.2%), and the two tied on FreshQA (82.7%
+against 81.3%). Exa was also faster (0.74 s p50 against 2.00 s) and cost more
 ($7 against $5 per 1,000 searches).
 
 ### What is the best SerpApi alternative?
 
-In this benchmark cloro matched or beat SerpApi on every dataset at about a
-quarter of the price per search: 96.9% against 94.7% on SimpleQA Verified
-(paired p = 0.0013), 88.3%
-against 88.5% on FreshQA (no difference) and 80.2% against 77.4% on FRAMES
-(paired p = 0.022), at $1.92 against $7.25 per 1,000 searches, and
-SerpApi needed a second search on most questions. Both are
-slow: cloro's p50 latency was 7.96 s and SerpApi's 8.20 s.
+In this benchmark cloro beat SerpApi on SimpleQA Verified and matched it on
+FreshQA and FRAMES, at about a quarter of the price per search: 97.1% against
+95.0% on SimpleQA Verified (paired p = 0.0015), 88.0% against 88.3% on FreshQA
+(no difference) and 80.2% against 78.2% on FRAMES (no significant difference,
+p = 0.089), at $1.92 against $7.25 per 1,000 searches, and SerpApi needed a
+second search on most questions. Both are slow: cloro's p50 latency was
+7.96 s and SerpApi's 8.20 s.
 
 ## Which search API is best for a RAG pipeline?
 
 This benchmark is a small RAG pipeline: one search, the top 10 results into
 the context window, one LLM answer grounded only on those results. For
 factual questions, Parallel, Exa, Perplexity and cloro gave the most correct answers. For
-time-sensitive questions, SerpApi and cloro did. For multi-hop questions,
-cloro did. For the lowest cost per
+time-sensitive questions, SerpApi and cloro did. For multi-hop questions, cloro did. For the lowest cost per
 correct answer, cloro. For latency under 1 second, Perplexity or Exa. Run the harness on 50
 to 100 of your own questions before you choose, because the order changed
 between the three datasets.
@@ -275,12 +274,12 @@ Every provider got the same setup:
 1. **One search per question.** The query is the question text, unchanged.
    There is no query rewrite, no second search and no page fetch.
 2. **10 results,** in the provider's default search mode.
-3. **The same reader.** One LLM (`gpt-5.6-luna`) reads at most 30,000
-   characters of search results and gives a short answer from those results
-   only, or "NOT FOUND". For FreshQA and FRAMES the prompt gives today's
-   date, and for FreshQA it asks the reader to point out a false premise.
-4. **The same grader.** One LLM (`gpt-5.6-sol`) grades each answer CORRECT,
-   INCORRECT or NOT_ATTEMPTED with the OpenAI simple-evals grader prompt
+3. **The same reader.** One LLM reads at most 30,000 characters of search
+   results and gives a short answer from those results only, or "NOT FOUND".
+   For FreshQA and FRAMES the prompt gives today's date, and for FreshQA it
+   asks the reader to point out a false premise.
+4. **The same grader.** Gemini (`gemini-pro-latest`) grades each answer
+   CORRECT, INCORRECT or NOT_ATTEMPTED with the simple-evals grader prompt
    ([`grader_template.txt`](grader_template.txt)), not changed.
 5. **The same questions,** shuffled with seed 42.
 
@@ -292,6 +291,8 @@ Every provider got the same setup:
 | Exa | `type=auto`, highlights | title, url, highlights |
 | Parallel | default mode, objective and query = the question | title, url, excerpts |
 | Brave Search API | `extra_snippets=true` | title, url, description, extra snippets |
+| Perplexity Search API | `/search`, `max_results=10`, huggingface.co and kaggle.com excluded | title, url, snippet |
+| Firecrawl | `/v2/search`, `limit=10`, no page scraping | title, url, description |
 
 The answer features that providers sell as separate options (Tavily
 `include_answer`, Exa `summary`) are off, because they are not part of a
@@ -303,8 +304,9 @@ leaves 358.
 Metrics: accuracy is correct answers over all questions, with a failed search
 counted as not attempted. Latency is the time of the search request from the
 first byte sent to the last byte received, the sum of both requests when a
-provider needs two. All providers ran from the same machine in the same time
-window, interleaved question by question, 4 requests at a time.
+provider needs two. All providers ran from the same machine. The first six ran
+in the same time window, interleaved question by question, 4 requests at a
+time. Perplexity and Firecrawl ran later in November 2026.
 
 ## Limitations
 
@@ -314,9 +316,11 @@ window, interleaved question by question, 4 requests at a time.
 - **The reader can answer from its own memory.** The prompt forbids it, and
   the same reader is used for every provider, so the effect is the same for
   all of them.
-- **Some pages copy benchmark answers.** On SimpleQA, 193 of 1,000 questions
-  had a search result that names the dataset. Without those questions the
-  order of the providers does not change. Each report has the leak check.
+- **Some pages copy benchmark answers.** Every API returned a page of a
+  benchmark dataset on some questions. On SimpleQA Verified the first six
+  APIs did so on 23 to 117 questions each, Firecrawl on 81 and Perplexity,
+  without its filter, on 500. Without the flagged questions the order of the
+  first six does not change. Each report has the leak check.
 - **Gold answers go stale.** On 30 FreshQA questions most APIs disagree with
   an answer key that may be out of date. Without them the order does not
   change.
@@ -326,7 +330,7 @@ window, interleaved question by question, 4 requests at a time.
 
 ## Run the benchmark yourself
 
-Python 3.10 or later, no packages to install. Set `OPENAI_API_KEY` and the
+Python 3.10 or later, no packages to install. Set `GEMINI_API_KEY` and the
 keys of the providers you want to test:
 
 | Provider | Key |
@@ -337,6 +341,13 @@ keys of the providers you want to test:
 | Exa | `EXA_API_KEY` |
 | Parallel | `PARALLEL_API_KEY` |
 | Brave | `BRAVE_API_KEY` |
+| Perplexity | `PERPLEXITY_API_KEY` |
+| Firecrawl | `FIRECRAWL_API_KEY` |
+
+The reader and the grader default to Gemini (`gemini-pro-latest`). The
+published runs used a different reader model: to run them again, set
+`READER_MODEL=gpt-5.6-luna` and `OPENAI_API_KEY`. A run with another reader is
+not comparable with the tables above.
 
 ```bash
 python3 benchmark.py --providers cloro,serpapi,tavily,exa,parallel,brave --n 1000 --workers 4
@@ -373,7 +384,7 @@ Run `--n 3` first to find a broken key before you spend the budget.
 
 A full SimpleQA run (1,000 questions, 6 providers) used about 7,000 cloro
 credits, 1,970 SerpApi searches, 1,000 Tavily credits, $7.00 of Exa, 1,000
-Parallel and 1,000 Brave requests, and 12,000 OpenAI calls.
+Parallel and 1,000 Brave requests, and 12,000 LLM calls.
 
 To add a provider, add a search function to [`benchmark.py`](benchmark.py)
 and add it to `PROVIDERS`. The function returns the raw response and a list
@@ -384,7 +395,7 @@ of text blocks for the reader.
 ### Is there an independent benchmark of Tavily, Exa and Brave?
 
 This one is run by cloro, a vendor, and it is reproducible: the harness,
-the questions, the settings and all 13,092 graded answers are in this repo.
+the questions, the settings and all 17,456 graded answers are in this repo.
 Each provider got the same single search, the same reader model and the same
 grader, so you can check every result and run it again with your own keys.
 
@@ -411,8 +422,11 @@ carry most of the rest. See the
 
 ### When was the benchmark run?
 
-SimpleQA Verified on November 4 and 5, 2026, FreshQA on November 5, 2026,
-FRAMES on November 10 and 11, 2026. Prices were read on November 5, 2026.
+In November 2026. The first six APIs ran SimpleQA Verified on November 4 and
+5, FreshQA on November 5 and FRAMES on November 10 and 11. Perplexity and
+Firecrawl ran on November 18, and Gemini graded every answer on the same day.
+Prices were read on November 5, and on November 18 for Perplexity and
+Firecrawl.
 
 ## How to cite
 
