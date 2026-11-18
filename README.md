@@ -1,9 +1,9 @@
-# Web Search API Benchmark 2026: Tavily vs Exa vs Parallel vs Brave vs SerpApi vs cloro
+# Web Search API Benchmark 2026: Tavily vs Exa vs Parallel vs Brave vs SerpApi vs Perplexity vs Firecrawl vs cloro
 
-Parallel, Exa and cloro are the most accurate web search APIs for AI agents in
-this benchmark of 2,182 questions, and the order changes with the question
-type: the three tie on short factual questions, SerpApi and cloro lead on
-recent events, and cloro leads on multi-hop questions.
+Parallel, Exa, Perplexity and cloro are the most accurate web search APIs for
+AI agents on short factual questions in this benchmark of 2,182 questions, and
+the order changes with the question type: SerpApi and cloro lead on recent
+events, and cloro leads on multi-hop questions.
 
 Accuracy by question type, one search per question, with the 95% interval in
 brackets:
@@ -16,14 +16,25 @@ brackets:
 | SerpApi | 94.7% (93.1-95.9) | 88.5% (84.8-91.4) | 77.4% (74.4-80.2) |
 | Brave Search API | 93.1% (91.4-94.5) | 84.9% (80.8-88.3) | 53.9% (50.5-57.3) |
 | Tavily | 91.8% (89.9-93.3) | 81.8% (77.5-85.5) | 48.4% (45.0-51.8) |
+| Perplexity Search API | 96.8% (94.9-98.0)\* | 84.5% (80.4-87.9)\* | 62.7% (57.9-67.2)\* |
+| Firecrawl | not run | not run | 43.4% (40.1-46.9) |
+
+\* Perplexity's Search API returned a Hugging Face page of the benchmark
+dataset, with the question and the answer, on 500 of 1,000 SimpleQA Verified
+questions and 414 of 824 FRAMES questions. Its figures are on the questions
+without such a page: 500, 355 and 410. On those same questions cloro scored
+96.4%, 88.2% and 77.3%. With the leaked questions, Perplexity scored 98.3%,
+84.6% and 80.5%. Perplexity and Firecrawl were added on November 18, 2026; see
+[their report](runs/perplexity-firecrawl-2026-11/report.md).
 
 An open benchmark of six web search APIs for AI agents and RAG pipelines:
 accuracy, cost per 1,000 searches and latency of cloro, SerpApi, Tavily, Exa,
 Parallel and Brave Search API, on SimpleQA Verified (1,000 questions),
 FreshQA (358 questions) and FRAMES (824 multi-hop questions). Every provider
 got one search per question, the same reader model and the same grader, in
-November 2026. The code, the settings and every graded answer are in this
-repo.
+November 2026. Perplexity Search API and Firecrawl were added later with the
+same setup ([report](runs/perplexity-firecrawl-2026-11/report.md)). The code,
+the settings and every graded answer are in this repo.
 
 ## Summary
 
@@ -39,8 +50,14 @@ repo.
 - **Lowest cost per 1,000 searches at 100,000 searches a month:** cloro $1.92,
   then Parallel, Brave and Tavily at $5, Exa at $7 and SerpApi at $7.25.
   SerpApi needed two searches on most questions.
-- **Fastest (p50 search latency):** Exa 0.74 s, Brave 1.21 s, Tavily 2.00 s,
-  Parallel 2.99 s. cloro (7.96 s) and SerpApi (8.20 s) are the slowest.
+- **Fastest (p50 search latency):** Perplexity 0.34 s, Exa 0.74 s, Brave
+  1.21 s, Tavily 2.00 s, Parallel 2.99 s. cloro (7.96 s) and SerpApi (8.20 s)
+  are the slowest.
+- **Perplexity Search API and Firecrawl (added November 18, 2026):** on the
+  questions where its results did not contain the benchmark's own dataset
+  page, Perplexity tied cloro, Parallel and Exa on SimpleQA Verified (96.8%),
+  scored 84.5% on FreshQA and 62.7% on FRAMES, at $5 per 1,000 searches.
+  Firecrawl scored 43.4% on FRAMES, the lowest of the eight, at $3.49.
 
 ## What is the most accurate web search API for AI agents?
 
@@ -72,6 +89,11 @@ of the search request alone, on SimpleQA Verified.
 | SerpApi | 94.7% (93.1-95.9) | 88.5% (84.8-91.4) | 77.4% (74.4-80.2) | $7.25 | 8.20 s |
 | Brave Search API | 93.1% (91.4-94.5) | 84.9% (80.8-88.3) | 53.9% (50.5-57.3) | $5.00 | 1.21 s |
 | Tavily | 91.8% (89.9-93.3) | 81.8% (77.5-85.5) | 48.4% (45.0-51.8) | $5.00 | 2.00 s |
+| Perplexity Search API\* | 96.8% (94.9-98.0) | 84.5% (80.4-87.9) | 62.7% (57.9-67.2) | $5.00 | 0.34 s |
+| Firecrawl | not run | not run | 43.4% (40.1-46.9) | $3.49 | 3.62 s (FRAMES) |
+
+\* On the questions without a leaked dataset page (500, 355 and 410). With
+them: 98.3%, 84.6% and 80.5%.
 
 The full reports, with the paired tests, the leak check, the questions with
 possibly wrong gold answers and the run costs, are in [`runs/`](runs):
@@ -118,6 +140,8 @@ plan price divided by what the plan includes (list prices read on November 5,
 | Tavily | $5.00 | Growth, $500 a month for 100,000 basic searches | 1,000 credits a month |
 | Exa | $7.00 | Search (auto), pay as you go | $10 of credits a month |
 | SerpApi | $7.25 | Searcher, $725 a month for 100,000 searches | 250 searches a month |
+| Perplexity Search API | $5.00 | $5 per 1,000 requests (read November 18) | Not found |
+| Firecrawl | $3.49 | Standard, $99 a month for 100,000 credits plus 100,000 extra credits at $5 per 2,000; 2 credits a search (read November 18) | 1,000 credits a month (500 searches) |
 
 SerpApi bills a second search when part of the result loads separately. That
 happened on 97% of SimpleQA questions and 75% of FreshQA questions, so a
@@ -129,7 +153,7 @@ pricing page before you buy.
 
 ## Which web search APIs have a free tier?
 
-All six web search APIs in this benchmark have a free tier, and Exa's
+The six web search APIs of the first run all have a free tier, and Exa's
 monthly tier buys the most searches with the request used here: $10 of
 credits a month, about 1,428 searches at $7 per 1,000. Of the five that say
 whether they need a card, Parallel and Brave do.
@@ -141,6 +165,7 @@ whether they need a card, Parallel and Brave do.
 | Brave Search API | $5 of credits on the Search plan | Monthly | 1,000 ($5 per 1,000) | Yes, "to prevent abuse" |
 | Tavily | 1,000 API credits | Monthly | 1,000 basic searches (1 credit each) | No |
 | SerpApi | 250 searches, 50 an hour | Monthly | 250 (a SimpleQA question took about 1.97 searches) | Not stated |
+| Firecrawl | 1,000 credits (read November 18) | Monthly | 500 (2 credits a search) | No |
 | cloro | 500 credits, 1 request at a time | Monthly | 100 at 5 credits (Google Search with the AI Overview); 166 Google searches without it, at 3 credits each | No |
 
 Sources, all read on November 16, 2026:
@@ -153,7 +178,8 @@ Sources, all read on November 16, 2026:
 [cloro.dev/pricing](https://cloro.dev/pricing/) and the
 [cloro billing guide](https://cloro.dev/docs/guides/billing). A sync cloro
 request adds 2 credits, so 500 credits make 71 sync searches with the AI
-Overview.
+Overview. The Perplexity pricing page shows no free tier for the Search API
+(read November 18, 2026).
 
 A free tier answers "What is the cheapest web search API?" only up to these
 volumes. Past them, the number to compare is the price per 1,000 searches in
@@ -169,8 +195,9 @@ SerpApi have the same accuracy, and cloro costs 73% less per search.
 
 ## What is the fastest web search API?
 
-Exa was the fastest web search API in this benchmark, with a p50 search
-latency of 0.74 s on SimpleQA Verified. Brave Search API took 1.21 s, Tavily
+Perplexity Search API was the fastest web search API in this benchmark, with a
+p50 search latency of 0.34 s on SimpleQA Verified (run on November 18). Exa
+took 0.74 s, Brave Search API 1.21 s, Tavily
 2.00 s and Parallel 2.99 s. cloro (7.96 s) and SerpApi (8.20 s) were the
 slowest. These figures come from runs with no other benchmark at the same
 time, 4 requests in parallel, from one machine.
@@ -194,6 +221,12 @@ questions one API answered correctly and the other did not.
 | cloro vs Brave | cloro, 50 to 12 (p < 0.0001) | no difference (p = 0.065) | cloro, 248 to 31 (p < 0.0001) |
 | cloro vs Exa | no difference (p = 0.63) | cloro, 25 to 6 (p = 0.0009) | cloro, 179 to 45 (p < 0.0001) |
 | cloro vs Parallel | no difference (p = 0.15) | cloro, 28 to 8 (p = 0.0012) | cloro, 172 to 49 (p < 0.0001) |
+| cloro vs Perplexity\* | no difference (p = 0.81) | no difference (p = 0.066) | cloro, 92 to 32 (p < 0.0001) |
+| cloro vs Firecrawl | not run | not run | cloro, 321 to 18 (p < 0.0001) |
+
+\* On the questions without a leaked dataset page. With all questions:
+Perplexity, 23 to 9 on SimpleQA Verified (p = 0.02), and no difference on
+FRAMES (p = 0.94).
 
 ### Tavily vs Exa: which is more accurate?
 
@@ -216,10 +249,10 @@ slow: cloro's p50 latency was 7.96 s and SerpApi's 8.20 s.
 
 This benchmark is a small RAG pipeline: one search, the top 10 results into
 the context window, one LLM answer grounded only on those results. For
-factual questions, Parallel, Exa and cloro gave the most correct answers. For
+factual questions, Parallel, Exa, Perplexity and cloro gave the most correct answers. For
 time-sensitive questions, SerpApi and cloro did. For multi-hop questions,
 cloro did. For the lowest cost per
-correct answer, cloro. For latency under 1 second, Exa. Run the harness on 50
+correct answer, cloro. For latency under 1 second, Perplexity or Exa. Run the harness on 50
 to 100 of your own questions before you choose, because the order changed
 between the three datasets.
 
