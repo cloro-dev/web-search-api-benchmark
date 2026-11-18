@@ -21,7 +21,7 @@ matters little for them. On FreshQA, some answers can change in two weeks.
 
 Perplexity's raw score is inflated by leaked answers. Its Search API returned a
 Hugging Face page of the benchmark dataset itself, with the question and the
-gold answer, on 500 of 1,000 SimpleQA Verified questions and 414 of 824 FRAMES
+gold answer, on 500 of 1,000 SimpleQA Verified questions and 411 of 824 FRAMES
 questions. On those questions Perplexity scored 99.8% and 98.1%. On the
 questions without a leak:
 
@@ -70,7 +70,7 @@ patterns of the earlier reports.
 |---|---|---|
 | SimpleQA Verified | 500 of 1,000 | `huggingface.co/datasets/SALT-NLP/simpleqa-verified/viewer/...` and copies of it |
 | FreshQA | 3 of 358 | - |
-| FRAMES | 414 of 824 | `huggingface.co/datasets/google/frames-benchmark/blob/main/test.tsv`, `huggingface.co/datasets/gviviano/frames-benchmark-predictions` |
+| FRAMES | 414 of 824 (411 by Perplexity, 23 by Firecrawl, some by both) | `huggingface.co/datasets/google/frames-benchmark/blob/main/test.tsv`, `huggingface.co/datasets/gviviano/frames-benchmark-predictions` |
 
 Firecrawl's own responses flagged 23 FRAMES questions.
 

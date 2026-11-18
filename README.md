@@ -21,7 +21,7 @@ brackets:
 
 \* Perplexity's Search API returned a Hugging Face page of the benchmark
 dataset, with the question and the answer, on 500 of 1,000 SimpleQA Verified
-questions and 414 of 824 FRAMES questions. Its figures are on the questions
+questions and 411 of 824 FRAMES questions. Its figures are on the questions
 without such a page: 500, 355 and 410. On those same questions cloro scored
 96.4%, 88.2% and 77.3%. With the leaked questions, Perplexity scored 98.3%,
 84.6% and 80.5%. Perplexity and Firecrawl were added on November 18, 2026; see
