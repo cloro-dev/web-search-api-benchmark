@@ -1,5 +1,9 @@
 # Perplexity Search API and Firecrawl, added on 2026-11-18
 
+> On 2026-11-18 Gemini (`gemini-pro-latest`) graded every answer again. The
+> grades in `results/` are the Gemini grades, and the numbers below are the
+> first grades. See the [regrade report](../regrade-gemini-2026-11/report.md).
+
 Run: 2026-11-18, `benchmark.py --providers perplexity,firecrawl`, seed 42,
 `--workers 4` (Firecrawl `--workers 1` after its rate limit). The questions,
 the reader (`gpt-5.6-luna`), the grader (`gpt-5.6-sol`) and the reader prompt

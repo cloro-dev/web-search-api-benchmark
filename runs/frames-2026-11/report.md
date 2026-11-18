@@ -1,5 +1,9 @@
 # FRAMES, 824 questions, 6 search APIs
 
+> On 2026-11-18 Gemini (`gemini-pro-latest`) graded every answer again. The
+> grades in `results/` are the Gemini grades, and the numbers below are the
+> first grades. See the [regrade report](../regrade-gemini-2026-11/report.md).
+
 Run: 2026-11-10 to 2026-11-11, `benchmark.py --dataset frames`, seed 42, all
 824 questions of [google/frames-benchmark](https://huggingface.co/datasets/google/frames-benchmark)
 (`test.tsv`, Apache-2.0), `--workers 6`. Reader `gpt-5.6-luna`, grader
