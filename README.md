@@ -16,16 +16,16 @@ brackets:
 | SerpApi | 94.7% (93.1-95.9) | 88.5% (84.8-91.4) | 77.4% (74.4-80.2) |
 | Brave Search API | 93.1% (91.4-94.5) | 84.9% (80.8-88.3) | 53.9% (50.5-57.3) |
 | Tavily | 91.8% (89.9-93.3) | 81.8% (77.5-85.5) | 48.4% (45.0-51.8) |
-| Perplexity Search API | 96.8% (94.9-98.0)\* | 84.5% (80.4-87.9)\* | 62.7% (57.9-67.2)\* |
+| Perplexity Search API\* | 97.5% (96.3-98.3) | 84.1% (79.9-87.5) | 62.9% (59.5-66.1) |
 | Firecrawl | not run | not run | 43.4% (40.1-46.9) |
 
-\* Perplexity's Search API returned a Hugging Face page of the benchmark
-dataset, with the question and the answer, on 500 of 1,000 SimpleQA Verified
-questions and 411 of 824 FRAMES questions. Its figures are on the questions
-without such a page: 500, 355 and 410. On those same questions cloro scored
-96.4%, 88.2% and 77.3%. With the leaked questions, Perplexity scored 98.3%,
-84.6% and 80.5%. Perplexity and Firecrawl were added on November 18, 2026; see
-[their report](runs/perplexity-firecrawl-2026-11/report.md).
+\* Perplexity ran again on November 18, 2026, on all 2,182 questions, with
+huggingface.co and kaggle.com excluded through its Search API domain filter,
+because those sites host copies of the benchmark datasets with the answers.
+Gemini (`gemini-pro-latest`) graded these answers; `gpt-5.6-sol` graded the
+other APIs. The first Perplexity run, without the filter, is in
+[its report](runs/perplexity-firecrawl-2026-11/report.md), and the rerun is in
+[this report](runs/perplexity-rerun-2026-11/report.md).
 
 An open benchmark of six web search APIs for AI agents and RAG pipelines:
 accuracy, cost per 1,000 searches and latency of cloro, SerpApi, Tavily, Exa,
@@ -33,7 +33,8 @@ Parallel and Brave Search API, on SimpleQA Verified (1,000 questions),
 FreshQA (358 questions) and FRAMES (824 multi-hop questions). Every provider
 got one search per question, the same reader model and the same grader, in
 November 2026. Perplexity Search API and Firecrawl were added later with the
-same setup ([report](runs/perplexity-firecrawl-2026-11/report.md)). The code,
+same reader ([report](runs/perplexity-firecrawl-2026-11/report.md)).
+Perplexity has a domain filter and a different grader (see the note above). The code,
 the settings and every graded answer are in this repo.
 
 ## Summary
@@ -53,10 +54,9 @@ the settings and every graded answer are in this repo.
 - **Fastest (p50 search latency):** Perplexity 0.34 s, Exa 0.74 s, Brave
   1.21 s, Tavily 2.00 s, Parallel 2.99 s. cloro (7.96 s) and SerpApi (8.20 s)
   are the slowest.
-- **Perplexity Search API and Firecrawl (added November 18, 2026):** on the
-  questions where its results did not contain the benchmark's own dataset
-  page, Perplexity tied cloro, Parallel and Exa on SimpleQA Verified (96.8%),
-  scored 84.5% on FreshQA and 62.7% on FRAMES, at $5 per 1,000 searches.
+- **Perplexity Search API and Firecrawl (added November 18, 2026):** Perplexity
+  tied cloro, Parallel and Exa on SimpleQA Verified (97.5%), scored 84.1% on
+  FreshQA and 62.9% on FRAMES, at $5 per 1,000 searches.
   Firecrawl scored 43.4% on FRAMES, the lowest of the eight, at $3.49.
 
 ## What is the most accurate web search API for AI agents?
@@ -89,11 +89,11 @@ of the search request alone, on SimpleQA Verified.
 | SerpApi | 94.7% (93.1-95.9) | 88.5% (84.8-91.4) | 77.4% (74.4-80.2) | $7.25 | 8.20 s |
 | Brave Search API | 93.1% (91.4-94.5) | 84.9% (80.8-88.3) | 53.9% (50.5-57.3) | $5.00 | 1.21 s |
 | Tavily | 91.8% (89.9-93.3) | 81.8% (77.5-85.5) | 48.4% (45.0-51.8) | $5.00 | 2.00 s |
-| Perplexity Search API\* | 96.8% (94.9-98.0) | 84.5% (80.4-87.9) | 62.7% (57.9-67.2) | $5.00 | 0.34 s |
+| Perplexity Search API\* | 97.5% (96.3-98.3) | 84.1% (79.9-87.5) | 62.9% (59.5-66.1) | $5.00 | 0.34 s |
 | Firecrawl | not run | not run | 43.4% (40.1-46.9) | $3.49 | 3.62 s (FRAMES) |
 
-\* On the questions without a leaked dataset page (500, 355 and 410). With
-them: 98.3%, 84.6% and 80.5%.
+\* With huggingface.co and kaggle.com excluded, graded by Gemini. See the
+note under the first table.
 
 The full reports, with the paired tests, the leak check, the questions with
 possibly wrong gold answers and the run costs, are in [`runs/`](runs):
@@ -221,12 +221,11 @@ questions one API answered correctly and the other did not.
 | cloro vs Brave | cloro, 50 to 12 (p < 0.0001) | no difference (p = 0.065) | cloro, 248 to 31 (p < 0.0001) |
 | cloro vs Exa | no difference (p = 0.63) | cloro, 25 to 6 (p = 0.0009) | cloro, 179 to 45 (p < 0.0001) |
 | cloro vs Parallel | no difference (p = 0.15) | cloro, 28 to 8 (p = 0.0012) | cloro, 172 to 49 (p < 0.0001) |
-| cloro vs Perplexity\* | no difference (p = 0.81) | no difference (p = 0.066) | cloro, 92 to 32 (p < 0.0001) |
+| cloro vs Perplexity\* | no difference (p = 0.38) | cloro, 24 to 9 (p = 0.014) | cloro, 199 to 56 (p < 0.0001) |
 | cloro vs Firecrawl | not run | not run | cloro, 321 to 18 (p < 0.0001) |
 
-\* On the questions without a leaked dataset page. With all questions:
-Perplexity, 23 to 9 on SimpleQA Verified (p = 0.02), and no difference on
-FRAMES (p = 0.94).
+\* The Perplexity rerun with the domain filter, graded by Gemini; the other
+API is graded by `gpt-5.6-sol`.
 
 ### Tavily vs Exa: which is more accurate?
 

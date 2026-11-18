@@ -35,6 +35,7 @@ Providers and keys:
   parallel  PARALLEL_API_KEY  default mode
   brave     BRAVE_API_KEY     extra_snippets=true
   perplexity PERPLEXITY_API_KEY Search API (/search), max_results=10
+  perplexity-nodata PERPLEXITY_API_KEY  as perplexity, with huggingface.co and kaggle.com excluded
   firecrawl FIRECRAWL_API_KEY  /v2/search, limit=10, no page scraping
 
 Read-only variants (no search call). They read the saved raw response of
@@ -256,10 +257,17 @@ def search_brave(t, q):
     return d, [block(r.get("title"), r.get("url"), "\n".join([r.get("description") or ""] + (r.get("extra_snippets") or []))) for r in results], False
 
 
-def search_perplexity(t, q):
+# The domains that host copies of the benchmark datasets, with the answers.
+DATASET_HOSTS = ["-huggingface.co", "-kaggle.com"]
+
+
+def search_perplexity(t, q, block_datasets=False):
+    body = {"query": q, "max_results": NUM_RESULTS}
+    if block_datasets:
+        body["search_domain_filter"] = DATASET_HOSTS
     d = t.http(
         "https://api.perplexity.ai/search",
-        {"query": q, "max_results": NUM_RESULTS},
+        body,
         {"Authorization": f"Bearer {os.environ['PERPLEXITY_API_KEY']}"},
     )
     return d, [block(r.get("title"), r.get("url"), r.get("snippet")) for r in d.get("results") or []], False
@@ -285,6 +293,7 @@ PROVIDERS = {
     "parallel": search_parallel,
     "brave": search_brave,
     "perplexity": search_perplexity,
+    "perplexity-nodata": lambda t, q: search_perplexity(t, q, block_datasets=True),
     "firecrawl": search_firecrawl,
 }
 
