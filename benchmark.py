@@ -34,6 +34,8 @@ Providers and keys:
   exa       EXA_API_KEY       type=auto, highlights
   parallel  PARALLEL_API_KEY  default mode
   brave     BRAVE_API_KEY     extra_snippets=true
+  perplexity PERPLEXITY_API_KEY Search API (/search), max_results=10
+  firecrawl FIRECRAWL_API_KEY  /v2/search, limit=10, no page scraping
 
 Read-only variants (no search call). They read the saved raw response of
 another provider in the same --out folder, so run that provider first:
@@ -254,6 +256,25 @@ def search_brave(t, q):
     return d, [block(r.get("title"), r.get("url"), "\n".join([r.get("description") or ""] + (r.get("extra_snippets") or []))) for r in results], False
 
 
+def search_perplexity(t, q):
+    d = t.http(
+        "https://api.perplexity.ai/search",
+        {"query": q, "max_results": NUM_RESULTS},
+        {"Authorization": f"Bearer {os.environ['PERPLEXITY_API_KEY']}"},
+    )
+    return d, [block(r.get("title"), r.get("url"), r.get("snippet")) for r in d.get("results") or []], False
+
+
+def search_firecrawl(t, q):
+    d = t.http(
+        "https://api.firecrawl.dev/v2/search",
+        {"query": q, "limit": NUM_RESULTS},
+        {"Authorization": f"Bearer {os.environ['FIRECRAWL_API_KEY']}"},
+    )
+    results = (d.get("data") or {}).get("web") or []
+    return d, [block(r.get("title"), r.get("url"), r.get("description")) for r in results], False
+
+
 PROVIDERS = {
     "cloro": search_cloro,
     "cloro-noaio": lambda t, q: search_cloro(t, q, with_aio=False),
@@ -263,6 +284,8 @@ PROVIDERS = {
     "exa": search_exa,
     "parallel": search_parallel,
     "brave": search_brave,
+    "perplexity": search_perplexity,
+    "firecrawl": search_firecrawl,
 }
 
 PAGE_CHARS = 20000  # the most characters of one crawled page that the reader gets
