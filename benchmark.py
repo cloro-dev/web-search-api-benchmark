@@ -37,6 +37,7 @@ Providers and keys:
   perplexity PERPLEXITY_API_KEY Search API (/search), max_results=10
   perplexity-nodata PERPLEXITY_API_KEY  as perplexity, with huggingface.co and kaggle.com excluded
   firecrawl FIRECRAWL_API_KEY  /v2/search, limit=10, no page scraping
+  youcom    YDC_API_KEY       /v1/search, count=10, description + snippets
 
 Read-only variants (no search call). They read the saved raw response of
 another provider in the same --out folder, so run that provider first:
@@ -58,6 +59,7 @@ another provider in the same --out folder, so run that provider first:
                   use --max-context-chars to give room for the pages)
   cloro-desc-only raw/cloro, the organic descriptions only (no AI Overview, titles or links)
   cloro-pages-top5-only raw/cloro, only the crawled page text of the top 5 organic links
+  youcom-reread   raw/youcom, the youcom format again (to read saved responses with another reader)
 
 Reader and grader: GEMINI_API_KEY, READER_MODEL, GRADER_MODEL. Both default to
 gemini-pro-latest, through the Gemini OpenAI-compatible endpoint. A model name
@@ -284,6 +286,20 @@ def search_firecrawl(t, q):
     return d, [block(r.get("title"), r.get("url"), r.get("description")) for r in results], False
 
 
+def youcom_parts(d):
+    results = (d.get("results") or {}).get("web") or []
+    return [block(r.get("title"), r.get("url"), "\n".join([r.get("description") or ""] + (r.get("snippets") or []))) for r in results], False
+
+
+def search_youcom(t, q):
+    d = t.http(
+        "https://ydc-index.io/v1/search",
+        {"query": q, "count": NUM_RESULTS},
+        {"X-API-Key": os.environ["YDC_API_KEY"]},
+    )
+    return (d, *youcom_parts(d))
+
+
 PROVIDERS = {
     "cloro": search_cloro,
     "cloro-noaio": lambda t, q: search_cloro(t, q, with_aio=False),
@@ -296,6 +312,7 @@ PROVIDERS = {
     "perplexity": search_perplexity,
     "perplexity-nodata": lambda t, q: search_perplexity(t, q, block_datasets=True),
     "firecrawl": search_firecrawl,
+    "youcom": search_youcom,
 }
 
 PAGE_CHARS = 20000  # the most characters of one crawled page that the reader gets
@@ -350,6 +367,7 @@ READ_ONLY = {
     "cloro-crawl-all": ("cloro", lambda d: cloro_crawl_parts(d, 1)),
     "cloro-desc-only": ("cloro", lambda d: cloro_parts(d, aio=False, extras=False, titles=False, links=False)),
     "cloro-pages-top5-only": ("cloro", lambda d: cloro_pages_only(d, 5)),
+    "youcom-reread": ("youcom", youcom_parts),
 }
 
 
