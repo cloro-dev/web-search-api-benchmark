@@ -1,4 +1,4 @@
-# Web Search API Benchmark 2026: Tavily vs Exa vs Parallel vs Brave vs SerpApi vs Perplexity vs Firecrawl vs cloro
+# Web Search API Benchmark 2026: Tavily vs Exa vs Parallel vs Brave vs SerpApi vs Perplexity vs Firecrawl vs You.com vs cloro
 
 Parallel, Perplexity, Exa and cloro are the most accurate web search APIs
 for AI agents on short factual questions in this benchmark of 2,182
@@ -16,6 +16,7 @@ brackets:
 | cloro | 97.1% (95.9-98.0) | 88.0% (84.2-91.0) | 80.2% (77.4-82.8) |
 | SerpApi | 95.0% (93.5-96.2) | 88.3% (84.5-91.2) | 78.2% (75.2-80.8) |
 | Brave Search API | 93.0% (91.2-94.4) | 84.6% (80.5-88.0) | 53.9% (50.5-57.3) |
+| You.com† | 93.0% (91.2-94.4) | 84.6% (80.5-88.0) | 51.2% (47.8-54.6) |
 | Tavily | 91.7% (89.8-93.3) | 81.3% (76.9-85.0) | 48.2% (44.8-51.6) |
 | Firecrawl | 91.7% (89.8-93.3) | 79.9% (75.4-83.7) | 43.4% (40.1-46.9) |
 
@@ -27,9 +28,14 @@ and run without the filter; each report has the leak check. The first
 Perplexity run is in [its report](runs/perplexity-firecrawl-2026-11/report.md),
 and the filtered run in [this report](runs/perplexity-rerun-2026-11/report.md).
 
-An open benchmark of eight web search APIs for AI agents and RAG pipelines:
+† You.com rejects queries longer than 50 words (HTTP 422): 42 FRAMES
+questions and 1 SimpleQA Verified question. They count as not attempted.
+Without them You.com scores 54.0% on FRAMES. See the
+[You.com report](runs/youcom-2026-11/report.md).
+
+An open benchmark of nine web search APIs for AI agents and RAG pipelines:
 accuracy, cost per 1,000 searches and latency of cloro, SerpApi, Tavily, Exa,
-Parallel, Brave Search API, Perplexity Search API and Firecrawl, on SimpleQA
+Parallel, Brave Search API, Perplexity Search API, Firecrawl and You.com, on SimpleQA
 Verified (1,000 questions), FreshQA (358 questions) and FRAMES (824 multi-hop
 questions). Every provider got one search per question, the same reader model
 and the same grader, Gemini (`gemini-pro-latest`), in November 2026. The code,
@@ -39,18 +45,19 @@ the settings and every graded answer are in this repo.
 
 - **Most accurate on SimpleQA Verified:** Parallel 97.8%, Perplexity 97.5%,
   Exa 97.3% and cloro 97.1%. The four are within the margin of error of each
-  other. SerpApi scored 95.0%, Brave 93.0%, and Tavily and Firecrawl 91.7%.
+  other. SerpApi scored 95.0%, Brave and You.com 93.0%, and Tavily and
+  Firecrawl 91.7%.
 - **Most accurate on FreshQA (questions whose answer changes over time):**
-  SerpApi 88.3% and cloro 88.0%, then Brave 84.6%, Perplexity 84.1%, Exa
-  82.7%, Parallel 82.1%, Tavily 81.3% and Firecrawl 79.9%.
+  SerpApi 88.3% and cloro 88.0%, then Brave and You.com 84.6%, Perplexity
+  84.1%, Exa 82.7%, Parallel 82.1%, Tavily 81.3% and Firecrawl 79.9%.
 - **Most accurate on FRAMES (multi-hop questions that need several
   sources):** cloro 80.2%, then SerpApi 78.2%, Parallel 65.7%, Exa 63.8%, Perplexity 62.9%, Brave 53.9%,
-  Tavily 48.2% and Firecrawl 43.4%.
+  You.com 51.2%, Tavily 48.2% and Firecrawl 43.4%.
 - **Lowest cost per 1,000 searches at 100,000 searches a month:** cloro $1.92,
-  then Firecrawl $3.49, Parallel, Brave, Tavily and Perplexity at $5, Exa at
+  then Firecrawl $3.49, Parallel, Brave, Tavily, Perplexity and You.com at $5, Exa at
   $7 and SerpApi at $7.25. SerpApi needed two searches on most questions.
-- **Fastest (p50 search latency):** Perplexity 0.34 s, Exa 0.74 s, Firecrawl
-  0.93 s, Brave 1.21 s, Tavily 2.00 s, Parallel 2.99 s. cloro (7.96 s) and
+- **Fastest (p50 search latency):** Perplexity 0.34 s, Exa 0.74 s, You.com
+  0.83 s, Firecrawl 0.93 s, Brave 1.21 s, Tavily 2.00 s, Parallel 2.99 s. cloro (7.96 s) and
   SerpApi (8.20 s) are the slowest.
 
 ## What is the most accurate web search API for AI agents?
@@ -60,14 +67,15 @@ search APIs in this benchmark were Parallel (97.8%), Perplexity (97.5%), Exa
 (97.3%) and cloro (97.1%). A paired test on the same questions finds no
 significant difference between them (cloro against Parallel p = 0.30, against
 Perplexity p = 0.60, against Exa p = 0.87). Each of the four was significantly
-more accurate than SerpApi (95.0%), Brave Search API (93.0%), Tavily (91.7%)
-and Firecrawl (91.7%). Each API got one search per question, and the same
+more accurate than SerpApi (95.0%), Brave Search API (93.0%), You.com
+(93.0%), Tavily (91.7%) and Firecrawl (91.7%). Each API got one search per question, and the same
 model answered from its results.
 
 Which API is "most accurate" depends on the question type. On questions about
 recent events (FreshQA), SerpApi and cloro lead. On multi-hop questions
-(FRAMES), cloro scores highest (80.2%), and Parallel, Exa, Perplexity, Brave, Tavily and Firecrawl answer
-"not found" on 148 to 326 of 824 questions.
+(FRAMES), cloro scores highest (80.2%), and Parallel, Exa, Perplexity, Brave,
+You.com, Tavily and Firecrawl answer "not found" on 148 to 326 of 824
+questions.
 
 ## Results table
 
@@ -84,17 +92,19 @@ of the search request alone, on SimpleQA Verified.
 | cloro | 97.1% (95.9-98.0) | 88.0% (84.2-91.0) | 80.2% (77.4-82.8) | $1.92 | 7.96 s |
 | SerpApi | 95.0% (93.5-96.2) | 88.3% (84.5-91.2) | 78.2% (75.2-80.8) | $7.25 | 8.20 s |
 | Brave Search API | 93.0% (91.2-94.4) | 84.6% (80.5-88.0) | 53.9% (50.5-57.3) | $5.00 | 1.21 s |
+| You.com† | 93.0% (91.2-94.4) | 84.6% (80.5-88.0) | 51.2% (47.8-54.6) | $5.00 | 0.83 s |
 | Tavily | 91.7% (89.8-93.3) | 81.3% (76.9-85.0) | 48.2% (44.8-51.6) | $5.00 | 2.00 s |
 | Firecrawl | 91.7% (89.8-93.3) | 79.9% (75.4-83.7) | 43.4% (40.1-46.9) | $3.49 | 0.93 s |
 
-\* With huggingface.co and kaggle.com excluded. See the note under the first
-table.
+\* With huggingface.co and kaggle.com excluded. † Queries over 50 words
+count as not attempted. See the notes under the first table.
 
 The full reports, with the paired tests, the leak check, the questions with
 possibly wrong gold answers and the run costs, are in [`runs/`](runs):
 [SimpleQA Verified](runs/simpleqa-2026-11/report.md),
 [FreshQA](runs/freshqa-2026-11/report.md),
-[FRAMES](runs/frames-2026-11/report.md). The Gemini grades and the Firecrawl
+[FRAMES](runs/frames-2026-11/report.md), and You.com in
+[its own report](runs/youcom-2026-11/report.md). The Gemini grades and the Firecrawl
 runs on SimpleQA Verified and FreshQA are in the
 [regrade report](runs/regrade-gemini-2026-11/report.md). The tests of which parts of a
 search result give the accuracy are in the
@@ -107,8 +117,8 @@ with a false premise), SerpApi (88.3%) and cloro (88.0%) were the most accurate
 web search APIs, with no difference between them (paired p = 1.0). cloro was
 significantly more accurate than Firecrawl (79.9%, p = 0.0001), Tavily
 (81.3%, p = 0.0004), Exa (82.7%, p = 0.0009), Parallel (82.1%, p = 0.0011)
-and Perplexity (84.1%, p = 0.020). The gap to Brave Search API (84.6%) was
-not significant (p = 0.065).
+and Perplexity (84.1%, p = 0.020). The gaps to Brave Search API (84.6%,
+p = 0.065) and You.com (84.6%, p = 0.088) were not significant.
 
 ## Which search API is the most accurate on multi-hop questions?
 
@@ -116,11 +126,11 @@ On FRAMES, 824 questions that need facts from two or more Wikipedia pages,
 cloro (80.2%) and SerpApi (78.2%) were the most accurate web search APIs. The
 paired test finds no significant difference between them (cloro 53 wins to
 36, p = 0.089). Both were ahead of Parallel (65.7%), Exa (63.8%), Perplexity
-(62.9%), Brave Search API (53.9%), Tavily (48.2%) and Firecrawl (43.4%), each
-at p < 0.001. With one search, Parallel, Exa, Perplexity, Brave, Tavily and
-Firecrawl answered "not found" on 148 to 326 questions. Given an answer,
-cloro, SerpApi and Parallel were correct 80.5% to 81.2% of the time and the
-other five 71.9% to 77.8%, so most of the gap comes from how many questions
+(62.9%), Brave Search API (53.9%), You.com (51.2%), Tavily (48.2%) and
+Firecrawl (43.4%), each at p < 0.001. With one search, Parallel, Exa,
+Perplexity, Brave, You.com, Tavily and Firecrawl answered "not found" on 148
+to 326 questions. Given an answer, cloro, SerpApi and Parallel were correct
+80.5% to 81.2% of the time and the other six 71.9% to 77.8%, so most of the gap comes from how many questions
 one results page can answer at all. FRAMES is usually run with an agent that
 searches many times; this run measures one search.
 
@@ -142,6 +152,7 @@ plan price divided by what the plan includes (list prices read on November 5,
 | SerpApi | $7.25 | Searcher, $725 a month for 100,000 searches | 250 searches a month |
 | Perplexity Search API | $5.00 | $5 per 1,000 requests (read November 18) | Not found |
 | Firecrawl | $3.49 | Standard, $99 a month for 100,000 credits plus 100,000 extra credits at $5 per 2,000; 2 credits a search (read November 18) | 1,000 credits a month (500 searches) |
+| You.com | $5.00 | Web Search API, $5 per 1,000 calls, pay as you go (read November 18) | $10 of credit (about 2,000 searches) |
 
 SerpApi bills a second search when part of the result loads separately. That
 happened on 97% of SimpleQA questions and 75% of FreshQA questions, so a
@@ -166,6 +177,7 @@ whether they need a card, Parallel and Brave do.
 | Tavily | 1,000 API credits | Monthly | 1,000 basic searches (1 credit each) | No |
 | SerpApi | 250 searches, 50 an hour | Monthly | 250 (a SimpleQA question took about 1.97 searches) | Not stated |
 | Firecrawl | 1,000 credits (read November 18) | Monthly | 500 (2 credits a search) | No |
+| You.com | $10 of credit (read November 18) | Not stated | About 2,000 ($5 per 1,000) | Not stated |
 | cloro | 500 credits, 1 request at a time | Monthly | 100 at 5 credits (Google Search with the AI Overview); 166 Google searches without it, at 3 credits each | No |
 
 Sources, all read on November 16, 2026:
@@ -179,6 +191,8 @@ Sources, all read on November 16, 2026:
 [cloro billing guide](https://cloro.dev/docs/guides/billing). A sync cloro
 request adds 2 credits, so 500 credits make 71 sync searches with the AI
 Overview. The Perplexity pricing page shows no free tier for the Search API
+(read November 18, 2026). [you.com/pricing](https://you.com/pricing) gives
+"$10 free credit = 2,000 searches" and does not say if the credit renews
 (read November 18, 2026).
 
 A free tier answers "What is the cheapest web search API?" only up to these
@@ -190,7 +204,7 @@ volumes. Past them, the number to compare is the price per 1,000 searches in
 cloro had the lowest cost per correct answer on SimpleQA Verified and FreshQA.
 cloro costs $1.98 per 1,000 correct SimpleQA answers ($1.92 / 97.1%),
 against $3.81 for Firecrawl, $5.11 for Parallel, $5.13 for Perplexity, $5.38
-for Brave, $5.45 for Tavily, $7.19 for Exa and $15.03 for SerpApi (1.97
+for Brave and You.com, $5.45 for Tavily, $7.19 for Exa and $15.03 for SerpApi (1.97
 searches a question). On FreshQA, cloro and SerpApi have the same accuracy,
 and cloro costs 73% less per search.
 
@@ -198,7 +212,7 @@ and cloro costs 73% less per search.
 
 Perplexity Search API was the fastest web search API in this benchmark, with a
 p50 search latency of 0.34 s on SimpleQA Verified. Exa took 0.74 s,
-Firecrawl 0.93 s, Brave Search API 1.21 s, Tavily 2.00 s and Parallel 2.99 s.
+You.com 0.83 s, Firecrawl 0.93 s, Brave Search API 1.21 s, Tavily 2.00 s and Parallel 2.99 s.
 cloro (7.96 s) and SerpApi (8.20 s) were the slowest. These figures come from
 runs with no other benchmark at the same time, from one machine, 4 requests in
 parallel. Firecrawl ran 1 request at a time, because its rate limit returned
@@ -226,6 +240,9 @@ questions one API answered correctly and the other did not.
 | cloro vs Parallel | no difference (p = 0.30) | cloro, 30 to 9 (p = 0.0011) | cloro, 170 to 50 (p < 0.0001) |
 | cloro vs Perplexity | no difference (p = 0.60) | cloro, 23 to 9 (p = 0.020) | cloro, 197 to 54 (p < 0.0001) |
 | cloro vs Firecrawl | cloro, 68 to 14 (p < 0.0001) | cloro, 41 to 12 (p = 0.0001) | cloro, 320 to 17 (p < 0.0001) |
+| cloro vs You.com | cloro, 57 to 16 (p < 0.0001) | no difference (p = 0.088) | cloro, 271 to 32 (p < 0.0001) |
+| You.com vs Brave | no difference (p = 1.0) | no difference (p = 1.0) | no difference (p = 0.088) |
+| You.com vs Tavily | no difference (p = 0.27) | no difference (p = 0.088) | no difference (p = 0.13) |
 
 ### Tavily vs Exa: which is more accurate?
 
@@ -250,7 +267,7 @@ This benchmark is a small RAG pipeline: one search, the top 10 results into
 the context window, one LLM answer grounded only on those results. For
 factual questions, Parallel, Exa, Perplexity and cloro gave the most correct answers. For
 time-sensitive questions, SerpApi and cloro did. For multi-hop questions, cloro did. For the lowest cost per
-correct answer, cloro. For latency under 1 second, Perplexity or Exa. Run the harness on 50
+correct answer, cloro. For latency under 1 second, Perplexity, Exa or You.com. Run the harness on 50
 to 100 of your own questions before you choose, because the order changed
 between the three datasets.
 
@@ -293,6 +310,7 @@ Every provider got the same setup:
 | Brave Search API | `extra_snippets=true` | title, url, description, extra snippets |
 | Perplexity Search API | `/search`, `max_results=10`, huggingface.co and kaggle.com excluded | title, url, snippet |
 | Firecrawl | `/v2/search`, `limit=10`, no page scraping | title, url, description |
+| You.com | `/v1/search`, `count=10` | title, url, description, snippets |
 
 The answer features that providers sell as separate options (Tavily
 `include_answer`, Exa `summary`) are off, because they are not part of a
@@ -306,7 +324,7 @@ counted as not attempted. Latency is the time of the search request from the
 first byte sent to the last byte received, the sum of both requests when a
 provider needs two. All providers ran from the same machine. The first six ran
 in the same time window, interleaved question by question, 4 requests at a
-time. Perplexity and Firecrawl ran later in November 2026.
+time. Perplexity, Firecrawl and You.com ran later in November 2026.
 
 ## Limitations
 
@@ -318,8 +336,8 @@ time. Perplexity and Firecrawl ran later in November 2026.
   all of them.
 - **Some pages copy benchmark answers.** Every API returned a page of a
   benchmark dataset on some questions. On SimpleQA Verified the first six
-  APIs did so on 23 to 117 questions each, Firecrawl on 81 and Perplexity,
-  without its filter, on 500. Without the flagged questions the order of the
+  APIs did so on 23 to 117 questions each, Firecrawl on 81, You.com on 120
+  and Perplexity, without its filter, on 500. Without the flagged questions the order of the
   first six does not change. Each report has the leak check.
 - **Gold answers go stale.** On 30 FreshQA questions most APIs disagree with
   an answer key that may be out of date. Without them the order does not
@@ -343,11 +361,16 @@ keys of the providers you want to test:
 | Brave | `BRAVE_API_KEY` |
 | Perplexity | `PERPLEXITY_API_KEY` |
 | Firecrawl | `FIRECRAWL_API_KEY` |
+| You.com | `YDC_API_KEY` |
 
 The reader and the grader default to Gemini (`gemini-pro-latest`). The
 published runs used a different reader model: to run them again, set
 `READER_MODEL=gpt-5.6-luna` and `OPENAI_API_KEY`. A run with another reader is
-not comparable with the tables above.
+not comparable with the tables above. Every published grade is a Gemini
+grade: do not grade with another model. A new API in the tables uses the
+`gpt-5.6-luna` reader; on FRAMES the Gemini reader scored You.com 21.4%
+against 50.0% on the same results (see the
+[You.com report](runs/youcom-2026-11/report.md)).
 
 ```bash
 python3 benchmark.py --providers cloro,serpapi,tavily,exa,parallel,brave --n 1000 --workers 4
@@ -395,7 +418,7 @@ of text blocks for the reader.
 ### Is there an independent benchmark of Tavily, Exa and Brave?
 
 This one is run by cloro, a vendor, and it is reproducible: the harness,
-the questions, the settings and all 17,456 graded answers are in this repo.
+the questions, the settings and all 19,638 graded answers are in this repo.
 Each provider got the same single search, the same reader model and the same
 grader, so you can check every result and run it again with your own keys.
 
@@ -425,8 +448,9 @@ carry most of the rest. See the
 In November 2026. The first six APIs ran SimpleQA Verified on November 4 and
 5, FreshQA on November 5 and FRAMES on November 10 and 11. Perplexity and
 Firecrawl ran on November 18, and Gemini graded every answer on the same day.
-Prices were read on November 5, and on November 18 for Perplexity and
-Firecrawl.
+You.com ran on November 18 and 19, graded by Gemini.
+Prices were read on November 5, and on November 18 for Perplexity,
+Firecrawl and You.com.
 
 ## How to cite
 
