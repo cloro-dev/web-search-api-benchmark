@@ -38,6 +38,8 @@ Providers and keys:
   perplexity-nodata PERPLEXITY_API_KEY  as perplexity, with huggingface.co and kaggle.com excluded
   firecrawl FIRECRAWL_API_KEY  /v2/search, limit=10, no page scraping
   youcom    YDC_API_KEY       /v1/search, count=10, description + snippets
+  keenable  KEENABLE_API_KEY  /v1/search, max_results=10, default mode (pro)
+  keenable-nodata KEENABLE_API_KEY  as keenable, with huggingface.co and kaggle.com excluded
 
 Read-only variants (no search call). They read the saved raw response of
 another provider in the same --out folder, so run that provider first:
@@ -300,6 +302,18 @@ def search_youcom(t, q):
     return (d, *youcom_parts(d))
 
 
+def search_keenable(t, q, block_datasets=False):
+    body = {"query": q, "max_results": NUM_RESULTS}
+    if block_datasets:
+        body["exclude_domains"] = [h.lstrip("-") for h in DATASET_HOSTS]
+    d = t.http(
+        "https://api.keenable.ai/v1/search",
+        body,
+        {"X-API-Key": os.environ["KEENABLE_API_KEY"]},
+    )
+    return d, [block(r.get("title"), r.get("url"), r.get("snippet")) for r in d.get("results") or []], False
+
+
 PROVIDERS = {
     "cloro": search_cloro,
     "cloro-noaio": lambda t, q: search_cloro(t, q, with_aio=False),
@@ -313,6 +327,8 @@ PROVIDERS = {
     "perplexity-nodata": lambda t, q: search_perplexity(t, q, block_datasets=True),
     "firecrawl": search_firecrawl,
     "youcom": search_youcom,
+    "keenable": search_keenable,
+    "keenable-nodata": lambda t, q: search_keenable(t, q, block_datasets=True),
 }
 
 PAGE_CHARS = 20000  # the most characters of one crawled page that the reader gets
