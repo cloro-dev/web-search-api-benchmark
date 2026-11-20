@@ -14,6 +14,15 @@
   knowledge. On SimpleQA Verified and FreshQA the two readers gave the same
   score. See [the You.com report](runs/youcom-2026-11/report.md).
 
+## Dataset leaks
+
+- **Run the leak check on every new API.** If its results hold the
+  benchmark's own dataset pages (huggingface.co, kaggle.com) and its score on
+  those questions is higher, add a `<api>-nodata` variant that excludes the
+  two hosts, and publish that score. Give the unfiltered score in a note.
+  Perplexity and Keenable use this filter. See
+  [the Keenable report](runs/keenable-2026-11/report.md).
+
 ## Keys
 
 All keys are in Doppler `marketing/dev`: the provider keys,
