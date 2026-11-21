@@ -454,7 +454,12 @@ def llm(model, prompt):
             if e.code != 429 or k == 4:
                 raise
             time.sleep(30 * (k + 1))
-    return d["choices"][0]["message"]["content"].strip(), (d.get("usage") or {}).get("prompt_tokens")
+    choice = d["choices"][0]
+    if "message" not in choice:
+        # Gemini's content filter returns no message. The reader gives no answer,
+        # so the grader marks it NOT_ATTEMPTED.
+        return f"NOT FOUND ({choice.get('finish_reason')})", (d.get("usage") or {}).get("prompt_tokens")
+    return choice["message"]["content"].strip(), (d.get("usage") or {}).get("prompt_tokens")
 
 
 def grade(question, target, predicted):
