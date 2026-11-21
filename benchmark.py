@@ -62,9 +62,14 @@ another provider in the same --out folder, so run that provider first:
   cloro-desc-only raw/cloro, the organic descriptions only (no AI Overview, titles or links)
   cloro-pages-top5-only raw/cloro, only the crawled page text of the top 5 organic links
   youcom-reread   raw/youcom, the youcom format again (to read saved responses with another reader)
+  <provider>-reread raw/<provider>, the published format again, for serpapi, tavily, exa,
+                  parallel, brave, perplexity(-nodata), firecrawl and keenable(-nodata)
+  cloro-other     raw/cloro, the results of a different question: a reader that keeps to
+                  the results replies NOT FOUND (a test of the reader, not of an API)
 
-Reader and grader: GEMINI_API_KEY, READER_MODEL, GRADER_MODEL. Both default to
-gemini-pro-latest, through the Gemini OpenAI-compatible endpoint. A model name
+Reader and grader: GEMINI_API_KEY, READER_MODEL, GRADER_MODEL. The reader defaults
+to gemini-3.8-flash and the grader to gemini-pro-latest, the models of the published
+runs, through the Gemini OpenAI-compatible endpoint. A model name
 that does not start with "gemini" uses OPENAI_API_KEY and the OpenAI endpoint.
 With --search-only, no LLM is called: the run measures latency only.
 
@@ -109,7 +114,7 @@ DATASET_URLS = {
     "obnews": "https://huggingface.co/datasets/openbenchmarks/OB-News-Websearch/resolve/main/data/eval.jsonl",
 }
 GRADER_TEMPLATE = open(os.path.join(HERE, "grader_template.txt")).read().strip()
-READER_MODEL = os.environ.get("READER_MODEL", "gemini-pro-latest")
+READER_MODEL = os.environ.get("READER_MODEL", "gemini-3.8-flash")
 GRADER_MODEL = os.environ.get("GRADER_MODEL", "gemini-pro-latest")
 NUM_RESULTS = 10
 MAX_CONTEXT_CHARS = 30000  # same cap for every provider
@@ -117,6 +122,7 @@ MAX_CONTEXT = MAX_CONTEXT_CHARS  # or --max-context-chars
 TIMEOUT_S = 120
 
 READER_PROMPT = """Answer the question using only the search results below.
+Use ONLY information from the search results. Do NOT use any internal knowledge.
 Give only the short answer (a name, number, date or phrase), with no explanation.
 If the results do not contain the answer, reply exactly: NOT FOUND
 
@@ -210,8 +216,14 @@ def search_serpapi(t, q):
         # Google loads some AI Overviews in a second request. A user also waits for it.
         extra = t.http("https://serpapi.com/search?" + urllib.parse.urlencode(
             {"engine": "google_ai_overview", "page_token": aio["page_token"], "api_key": key}))
-        aio = extra.get("ai_overview") or {}
         d["_ai_overview_followup"] = extra
+    return (d, *serpapi_parts(d))
+
+
+def serpapi_parts(d):
+    aio = d.get("ai_overview") or {}
+    if "_ai_overview_followup" in d:
+        aio = d["_ai_overview_followup"].get("ai_overview") or {}
     aio_text = serpapi_aio_text(aio)
     parts = ["[AI Overview]\n" + aio_text] if aio_text else []
     ab = d.get("answer_box") or {}
@@ -222,7 +234,11 @@ def search_serpapi(t, q):
         parts.append("[Knowledge graph]\n" + " ".join(filter(None, [kg.get("title"), kg.get("description")])))
     parts += [block(o.get("title"), o.get("link"), o.get("snippet")) for o in (d.get("organic_results") or [])[:NUM_RESULTS]]
     parts += [block(p.get("question"), None, p.get("snippet")) for p in d.get("related_questions") or [] if p.get("snippet")]
-    return d, parts, bool(aio_text)
+    return parts, bool(aio_text)
+
+
+def tavily_parts(d):
+    return [block(r.get("title"), r.get("url"), r.get("content")) for r in d.get("results") or []], False
 
 
 def search_tavily(t, q):
@@ -231,7 +247,11 @@ def search_tavily(t, q):
         {"query": q, "search_depth": "basic", "max_results": NUM_RESULTS},
         {"Authorization": f"Bearer {os.environ['TAVILY_API_KEY']}"},
     )
-    return d, [block(r.get("title"), r.get("url"), r.get("content")) for r in d.get("results") or []], False
+    return (d, *tavily_parts(d))
+
+
+def exa_parts(d):
+    return [block(r.get("title"), r.get("url"), "\n".join(r.get("highlights") or [])) for r in d.get("results") or []], False
 
 
 def search_exa(t, q):
@@ -240,7 +260,11 @@ def search_exa(t, q):
         {"query": q, "type": "auto", "numResults": NUM_RESULTS, "contents": {"highlights": True}},
         {"x-api-key": os.environ["EXA_API_KEY"]},
     )
-    return d, [block(r.get("title"), r.get("url"), "\n".join(r.get("highlights") or [])) for r in d.get("results") or []], False
+    return (d, *exa_parts(d))
+
+
+def parallel_parts(d):
+    return [block(r.get("title"), r.get("url"), "\n".join(r.get("excerpts") or [])) for r in d.get("results") or []], False
 
 
 def search_parallel(t, q):
@@ -249,7 +273,11 @@ def search_parallel(t, q):
         {"objective": q, "search_queries": [q], "advanced_settings": {"max_results": NUM_RESULTS}},
         {"x-api-key": os.environ["PARALLEL_API_KEY"]},
     )
-    return d, [block(r.get("title"), r.get("url"), "\n".join(r.get("excerpts") or [])) for r in d.get("results") or []], False
+    return (d, *parallel_parts(d))
+
+
+def brave_parts(d):
+    return [block(r.get("title"), r.get("url"), "\n".join([r.get("description") or ""] + (r.get("extra_snippets") or []))) for r in (d.get("web") or {}).get("results") or []], False
 
 
 def search_brave(t, q):
@@ -258,12 +286,15 @@ def search_brave(t, q):
         "https://api.search.brave.com/res/v1/web/search?" + urllib.parse.urlencode(params),
         headers={"X-Subscription-Token": os.environ["BRAVE_API_KEY"], "Accept": "application/json"},
     )
-    results = (d.get("web") or {}).get("results") or []
-    return d, [block(r.get("title"), r.get("url"), "\n".join([r.get("description") or ""] + (r.get("extra_snippets") or []))) for r in results], False
+    return (d, *brave_parts(d))
 
 
 # The domains that host copies of the benchmark datasets, with the answers.
 DATASET_HOSTS = ["-huggingface.co", "-kaggle.com"]
+
+
+def perplexity_parts(d):
+    return [block(r.get("title"), r.get("url"), r.get("snippet")) for r in d.get("results") or []], False
 
 
 def search_perplexity(t, q, block_datasets=False):
@@ -275,7 +306,11 @@ def search_perplexity(t, q, block_datasets=False):
         body,
         {"Authorization": f"Bearer {os.environ['PERPLEXITY_API_KEY']}"},
     )
-    return d, [block(r.get("title"), r.get("url"), r.get("snippet")) for r in d.get("results") or []], False
+    return (d, *perplexity_parts(d))
+
+
+def firecrawl_parts(d):
+    return [block(r.get("title"), r.get("url"), r.get("description")) for r in (d.get("data") or {}).get("web") or []], False
 
 
 def search_firecrawl(t, q):
@@ -284,8 +319,7 @@ def search_firecrawl(t, q):
         {"query": q, "limit": NUM_RESULTS},
         {"Authorization": f"Bearer {os.environ['FIRECRAWL_API_KEY']}"},
     )
-    results = (d.get("data") or {}).get("web") or []
-    return d, [block(r.get("title"), r.get("url"), r.get("description")) for r in results], False
+    return (d, *firecrawl_parts(d))
 
 
 def youcom_parts(d):
@@ -302,6 +336,10 @@ def search_youcom(t, q):
     return (d, *youcom_parts(d))
 
 
+def keenable_parts(d):
+    return [block(r.get("title"), r.get("url"), r.get("snippet")) for r in d.get("results") or []], False
+
+
 def search_keenable(t, q, block_datasets=False):
     body = {"query": q, "max_results": NUM_RESULTS}
     if block_datasets:
@@ -311,7 +349,7 @@ def search_keenable(t, q, block_datasets=False):
         body,
         {"X-API-Key": os.environ["KEENABLE_API_KEY"]},
     )
-    return d, [block(r.get("title"), r.get("url"), r.get("snippet")) for r in d.get("results") or []], False
+    return (d, *keenable_parts(d))
 
 
 PROVIDERS = {
@@ -385,6 +423,21 @@ READ_ONLY = {
     "cloro-pages-top5-only": ("cloro", lambda d: cloro_pages_only(d, 5)),
     "youcom-reread": ("youcom", youcom_parts),
 }
+# <provider>-reread: the published format again, from the saved responses, with
+# no search call. Use it to read the same results with another reader model.
+PARTS = {"serpapi": serpapi_parts, "tavily": tavily_parts, "exa": exa_parts, "parallel": parallel_parts,
+         "brave": brave_parts, "perplexity": perplexity_parts, "perplexity-nodata": perplexity_parts,
+         "firecrawl": firecrawl_parts, "keenable": keenable_parts, "keenable-nodata": keenable_parts}
+READ_ONLY.update({f"{p}-reread": (p, f) for p, f in PARTS.items()})
+# cloro-other: the saved cloro results of a different question (the next id in raw/cloro).
+# A reader that uses only the search results must reply NOT FOUND. Each correct
+# answer comes from the reader's own memory.
+READ_ONLY["cloro-other"] = ("cloro", cloro_parts)
+
+
+def other_id(source, qid):
+    ids = sorted(f[:-5] for f in os.listdir(os.path.join(OUT, "raw", source)))
+    return ids[(ids.index(qid) + 1) % len(ids)] if qid in ids else qid
 
 
 def llm(model, prompt):
@@ -414,7 +467,8 @@ def run_one(provider, row, search_only, reader_prompt):
     rec = {"id": row["original_index"], "provider": provider, "problem": row["problem"], "gold": row["answer"], "topic": row["topic"]}
     if provider in READ_ONLY:
         source, to_parts = READ_ONLY[provider]
-        path = os.path.join(OUT, "raw", source, f"{row['original_index']}.json")
+        qid = other_id(source, row["original_index"]) if provider == "cloro-other" else row["original_index"]
+        path = os.path.join(OUT, "raw", source, f"{qid}.json")
         if not os.path.exists(path):
             rec.update(search_ok=False, http_calls=0, error=f"no saved response {path}", grade="ERROR")
             return rec

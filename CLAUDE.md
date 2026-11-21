@@ -4,15 +4,22 @@
 
 - **Gemini (`gemini-pro-latest`) grades every answer.** Do not grade with
   another model. Since 2026-11-18, all published grades are Gemini grades.
-- **The reader of the published runs is `gpt-5.6-luna`.** When you add an API
-  to the published tables, read its results with `gpt-5.6-luna`, so that its
-  score compares with the other APIs. Change the reader only in a full rerun
-  of all APIs, and say so in the README.
-- **Why the reader stays:** on the same 140 You.com FRAMES results, the
-  `gpt-5.6-luna` reader scored 50.0% and the Gemini reader 21.4%. The Gemini
-  reader replies NOT FOUND when the answer needs a found fact plus general
-  knowledge. On SimpleQA Verified and FreshQA the two readers gave the same
-  score. See [the You.com report](runs/youcom-2026-11/report.md).
+- **The reader is `gemini-3.8-flash`, with the strict reader prompt.** It is
+  the default `READER_MODEL` in `benchmark.py`. Every published run uses this
+  reader and the prompt line "Use ONLY information from the search results.
+  Do NOT use any internal knowledge." When you add an API, read its results
+  with this reader. Do not change the reader or the prompt without a full
+  rerun of all APIs, and say so in the README.
+- **Why this reader:** the reader must answer from the search results only,
+  not from its own memory. With the strict prompt, judges found that 23% of
+  the FRAMES answers of `gpt-5.6-luna` and 27% of `gpt-4.1` are not supported
+  by the search results. For `gemini-3.8-flash` it is 4%, the same as the
+  more expensive Gemini models, and it misses no more answers that the
+  results hold. `gemini-3.5-flash-lite` misses more, and
+  `gemini-3.1-flash-lite` answers from memory. See
+  [the reader test](runs/reader-test-2026-11/report.md).
+- **Use the fixed model name, not a `-latest` name.** Google changes the
+  model behind a `-latest` name at each release.
 
 ## Dataset leaks
 
@@ -25,13 +32,12 @@
 
 ## Keys
 
-All keys are in Doppler `marketing/dev`: the provider keys,
-`OPENAI_API_KEY` for the reader and `GEMINI_API_KEY` for the grader. Never put
-a key in the repo.
+All keys are in Doppler `marketing/dev`: the provider keys, `GEMINI_API_KEY`
+for the reader and the grader, and `OPENAI_API_KEY` for the `gpt-5.6-sol`
+judge of `analysis/grounding.py`. Never put a key in the repo.
 
 ```bash
-READER_MODEL=gpt-5.6-luna GRADER_MODEL=gemini-pro-latest \
-  doppler run -p marketing -c dev -- python3 benchmark.py --providers <api> ...
+doppler run -p marketing -c dev -- python3 benchmark.py --providers <api> ...
 ```
 
 Use the `--as-of` date of the earlier run of each dataset (FreshQA

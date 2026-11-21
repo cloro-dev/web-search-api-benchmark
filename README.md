@@ -426,6 +426,13 @@ Run `--n 3` first to find a broken key before you spend the budget.
   search call. They read the saved
   raw responses of `cloro` (or `cloro-2p`) in the same `--out` folder, so run
   that provider first. `cloro-2p` asks for two Google result pages.
+- `<provider>-reread` (for every API except cloro, which has `cloro-reread`)
+  reads the saved raw responses of `<provider>` again in the published
+  format, with no search call. Use it to test another reader model on the
+  same results, as in the [reader test](runs/reader-test-2026-11/report.md).
+- `cloro-other` gives each question the saved cloro results of a different
+  question. A reader that keeps to its input replies NOT FOUND. It tests the
+  reader, not an API.
 - `--search-only` measures latency with no LLM calls.
 - `--out <folder>` sets the run folder. Results go to
   `<folder>/results/<provider>.jsonl` and raw responses to
