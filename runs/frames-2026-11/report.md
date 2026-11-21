@@ -1,5 +1,12 @@
 # FRAMES, 824 questions, 6 search APIs
 
+> **Earlier reader.** The scores in this report come from the earlier reader,
+> `gpt-5.6-luna`, with the earlier reader prompt. The published scores use
+> `gemini-3.8-flash` with a prompt that allows only the search results: see the
+> [rerun report](../rerun-2026-11/report.md) and the
+> [reader test](../reader-test-2026-11/report.md). The search responses, the
+> latencies and the counts that do not depend on the reader stay valid.
+
 > On 2026-11-18 Gemini (`gemini-pro-latest`) graded every answer again. The
 > grades in `results/` are the Gemini grades, and the numbers below are the
 > first grades. See the [regrade report](../regrade-gemini-2026-11/report.md).

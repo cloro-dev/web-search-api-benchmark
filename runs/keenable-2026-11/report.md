@@ -1,5 +1,12 @@
 # Keenable Search API, added on 2026-11-20
 
+> **Earlier reader.** The scores in this report come from the earlier reader,
+> `gpt-5.6-luna`, with the earlier reader prompt. The published scores use
+> `gemini-3.8-flash` with a prompt that allows only the search results: see the
+> [rerun report](../rerun-2026-11/report.md) and the
+> [reader test](../reader-test-2026-11/report.md). The search responses, the
+> latencies and the counts that do not depend on the reader stay valid.
+
 Run: 2026-11-20, `benchmark.py --providers keenable` and
 `--providers keenable-nodata`, seed 42, `--workers 4`. The questions, the
 reader (`gpt-5.6-luna`), the reader prompt and the `--as-of` dates (FRAMES
