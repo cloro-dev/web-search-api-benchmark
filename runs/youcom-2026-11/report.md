@@ -1,5 +1,12 @@
 # You.com Web Search API, added on 2026-11-18
 
+> **Earlier reader.** The scores in this report come from the earlier reader,
+> `gpt-5.6-luna`, with the earlier reader prompt. The published scores use
+> `gemini-3.8-flash` with a prompt that allows only the search results: see the
+> [rerun report](../rerun-2026-11/report.md) and the
+> [reader test](../reader-test-2026-11/report.md). The search responses, the
+> latencies and the counts that do not depend on the reader stay valid.
+
 Run: 2026-11-18 and 2026-11-19, `benchmark.py --providers youcom`, seed 42,
 `--workers 4`. The questions, the reader (`gpt-5.6-luna`), the reader prompt
 and the `--as-of` dates (FRAMES 2026-11-10, FreshQA 2026-11-05) are the same

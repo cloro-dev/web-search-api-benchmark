@@ -1,5 +1,12 @@
 # One grader for every API, and Firecrawl on all three datasets (2026-11-18)
 
+> **Earlier reader.** The scores in this report come from the earlier reader,
+> `gpt-5.6-luna`, with the earlier reader prompt. The published scores use
+> `gemini-3.8-flash` with a prompt that allows only the search results: see the
+> [rerun report](../rerun-2026-11/report.md) and the
+> [reader test](../reader-test-2026-11/report.md). The search responses, the
+> latencies and the counts that do not depend on the reader stay valid.
+
 Two changes, made on 2026-11-18:
 
 1. **Gemini grades every answer.** Before this, one model graded the first

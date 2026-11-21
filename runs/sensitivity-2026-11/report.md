@@ -1,5 +1,12 @@
 # Sensitivity tests: which parts of a search result give the accuracy
 
+> **Earlier reader.** The scores in this report come from the earlier reader,
+> `gpt-5.6-luna`, with the earlier reader prompt. The published scores use
+> `gemini-3.8-flash` with a prompt that allows only the search results: see the
+> [rerun report](../rerun-2026-11/report.md) and the
+> [reader test](../reader-test-2026-11/report.md). The search responses, the
+> latencies and the counts that do not depend on the reader stay valid.
+
 Run: 2026-11-10 and 2026-11-11, `benchmark.py`, seed 42. Reader
 `gpt-5.6-luna`, grader `gpt-5.6-sol`, unless a section says otherwise. One
 search per question. Linear: OPE-213.
