@@ -98,16 +98,22 @@ the other top APIs:
 | Firecrawl | 0.8% (7 of 886) | 16.7% (48 of 288) | 7.5% (10 of 133) |
 | SerpApi | 1.5% (6 of 389) | 20.6% (51 of 247) | 7.7% (5 of 65) |
 
-The check is not stable when it rejects. We ran it again once on every
-rejected SimpleQA answer of the top five and on 30 accepted answers of each:
+The check is not stable when it rejects. We ran it again two times on every
+rejected SimpleQA answer of the top five and on the same 30 accepted answers
+of each (random seed 7):
 
-- 9 of cloro's 24 rejected answers and 8 of the 10 rejected answers of the
-  other four were SUPPORTED on the second run.
-- 0 of the 150 accepted answers changed.
+| Answers | First recheck | Second recheck |
+|---|---|---|
+| cloro: rejected answers that were SUPPORTED | 9 of 24 | 13 of 24 |
+| The other four: rejected answers that were SUPPORTED | 8 of 10 | 8 of 10 |
+| Accepted answers that changed | 0 of 150 | 0 of 150 |
 
-So the supported score is a lower bound, and cloro still has 15 answers
-that the check rejects twice. We read three of cloro's rejected answers, and
-in all three the AI Overview states the answer. The
+Only the second recheck saved each verdict:
+[`checks/simpleqa-support-recheck.jsonl`](checks/simpleqa-support-recheck.jsonl).
+
+So the supported score is a lower bound. In the second recheck, 11 of
+cloro's 24 rejected answers were rejected again. We read three of cloro's
+rejected answers, and in all three the AI Overview states the answer. The
 published scores keep the verdicts of the first run.
 
 ## Change from the Gemini run
@@ -207,7 +213,10 @@ changes fixed it:
 
 - The grader writes one short sentence, then the letter on the last line.
   On the same 716 answers, Haiku then agreed with Gemini on 98.6% (cloro)
-  and 98.3% (Parallel).
+  and 98.3% (Parallel) in a test run. The published grades come from a
+  second run of the same prompt over all answers, and they agree with Gemini
+  on 97.8% for both. Each grade is in
+  [`checks/freshqa-grader-agreement.jsonl`](checks/freshqa-grader-agreement.jsonl).
 - FreshQA questions get two rules (`FRESHQA_GRADER_RULES` in
   `benchmark.py`): a gold target with "OR" lists alternatives, and an answer
   that says a false premise is false is correct.
@@ -230,3 +239,11 @@ new prompt. The change by dataset, old prompt -> new prompt, over all APIs:
 answer, the grade and `supported`. The SerpApi file is
 `serpapi-single-reread.jsonl`. The raw search responses are those of the
 earlier runs and are not in the repo.
+
+`checks/freshqa-grader-agreement.jsonl`: the 716 FreshQA answers of cloro
+and Parallel, with the grade of `gemini-pro-latest`, of Haiku with the bare
+letter, of Haiku with one sentence first (and that sentence), and the
+published grade.
+
+`checks/simpleqa-support-recheck.jsonl`: the second recheck of the support
+check. `first_check` is the published verdict, `second_check` the new one.
