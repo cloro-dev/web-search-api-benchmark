@@ -29,7 +29,7 @@ Providers and keys:
   cloro     CLORO_API_KEY     Google results + AI Overview
   cloro-noaio CLORO_API_KEY   Google results only (no AI Overview requested or read)
   cloro-2p  CLORO_API_KEY     as cloro, with pages=2: up to 20 organic results
-  serpapi   SERPAPI_KEY       Google results + AI Overview (follows page_token)
+  serpapi   SERPAPI_KEY       Google results, one request (no second AI Overview request)
   tavily    TAVILY_API_KEY    search_depth=basic
   exa       EXA_API_KEY       type=auto, highlights
   parallel  PARALLEL_API_KEY  default mode
@@ -62,15 +62,20 @@ another provider in the same --out folder, so run that provider first:
   cloro-desc-only raw/cloro, the organic descriptions only (no AI Overview, titles or links)
   cloro-pages-top5-only raw/cloro, only the crawled page text of the top 5 organic links
   youcom-reread   raw/youcom, the youcom format again (to read saved responses with another reader)
+  serpapi-single-reread raw/serpapi, without the second AI Overview request (one request per search)
   <provider>-reread raw/<provider>, the published format again, for serpapi, tavily, exa,
                   parallel, brave, perplexity(-nodata), firecrawl and keenable(-nodata)
   cloro-other     raw/cloro, the results of a different question: a reader that keeps to
                   the results replies NOT FOUND (a test of the reader, not of an API)
 
-Reader and grader: GEMINI_API_KEY, READER_MODEL, GRADER_MODEL. The reader defaults
-to gemini-3.8-flash and the grader to gemini-pro-latest, the models of the published
-runs, through the Gemini OpenAI-compatible endpoint. A model name
-that does not start with "gemini" uses OPENAI_API_KEY and the OpenAI endpoint.
+Reader and grader: READER_MODEL and GRADER_MODEL. Both default to claude-haiku-5-5,
+the model of the published runs. A model name that starts with "claude" runs through
+Claude Code headless (`claude -p`) on the login of the `claude` command or
+CLAUDE_CODE_OAUTH_TOKEN, never on an API key. A model name that starts with "gemini"
+uses GEMINI_API_KEY and the Gemini OpenAI-compatible endpoint (the models of the runs
+before 2026-11-28). Any other model name uses OPENAI_API_KEY and the OpenAI endpoint.
+With --support-check, a correct answer is checked again by GRADER_MODEL: it counts
+as supported only if the search results state it (the field "supported").
 With --search-only, no LLM is called: the run measures latency only.
 
 Usage (from the repo root):
@@ -92,6 +97,7 @@ import os
 import random
 import re
 import statistics
+import subprocess
 import sys
 import time
 import urllib.error
@@ -114,8 +120,22 @@ DATASET_URLS = {
     "obnews": "https://huggingface.co/datasets/openbenchmarks/OB-News-Websearch/resolve/main/data/eval.jsonl",
 }
 GRADER_TEMPLATE = open(os.path.join(HERE, "grader_template.txt")).read().strip()
-READER_MODEL = os.environ.get("READER_MODEL", "gemini-3.8-flash")
-GRADER_MODEL = os.environ.get("GRADER_MODEL", "gemini-pro-latest")
+# The grader writes one sentence, then the letter. With the bare letter of simple-evals, Haiku
+# agreed with Gemini on 80% to 82% of 716 FreshQA answers; with one sentence first, on 98%
+# (2026-11-28). grade() reads the letter on the last line.
+GRADER_TEMPLATE = GRADER_TEMPLATE.replace(
+    'Just return the letters "A", "B", or "C", with no text around it.',
+    'First write one short sentence that compares the predicted answer with the gold target. Then write only the letter "A", "B" or "C" on the last line.')
+# FreshQA has gold targets with alternatives and questions with a false premise. The SimpleQA
+# template does not cover them, and Haiku then grades correct answers as wrong (2026-11-27:
+# 13 to 14 points below Gemini on the same answers). main() adds these rules for FreshQA.
+FRESHQA_GRADER_RULES = """Rules for this question (they come before the rules above):
+- The gold target can give more than one correct answer, separated by "OR". A predicted answer that matches one of them is CORRECT.
+- If the gold target says that the premise of the question is false (the event did not happen, the thing does not exist, the person is alive, and so on), then a predicted answer that says the same, in any wording, is CORRECT. It is CORRECT also when it then says NOT FOUND or None, or adds facts that do not contradict the gold target. A predicted answer that accepts the false premise is INCORRECT.
+
+"""
+READER_MODEL = os.environ.get("READER_MODEL", "claude-haiku-5-5")
+GRADER_MODEL = os.environ.get("GRADER_MODEL", "claude-haiku-5-5")
 NUM_RESULTS = 10
 MAX_CONTEXT_CHARS = 30000  # same cap for every provider
 MAX_CONTEXT = MAX_CONTEXT_CHARS  # or --max-context-chars
@@ -210,19 +230,15 @@ def serpapi_aio_text(aio):
 def search_serpapi(t, q):
     key = os.environ["SERPAPI_KEY"]
     params = {"engine": "google", "q": q, "gl": "us", "hl": "en", "no_cache": "true", "api_key": key}
+    # One request per search, as for every other API. Most AI Overviews need a second request
+    # (engine google_ai_overview); it is not made, so those AI Overviews are missing.
     d = t.http("https://serpapi.com/search?" + urllib.parse.urlencode(params))
-    aio = d.get("ai_overview") or {}
-    if aio.get("page_token") and not aio.get("text_blocks"):
-        # Google loads some AI Overviews in a second request. A user also waits for it.
-        extra = t.http("https://serpapi.com/search?" + urllib.parse.urlencode(
-            {"engine": "google_ai_overview", "page_token": aio["page_token"], "api_key": key}))
-        d["_ai_overview_followup"] = extra
-    return (d, *serpapi_parts(d))
+    return (d, *serpapi_parts(d, followup=False))
 
 
-def serpapi_parts(d):
+def serpapi_parts(d, followup=True):
     aio = d.get("ai_overview") or {}
-    if "_ai_overview_followup" in d:
+    if followup and "_ai_overview_followup" in d:
         aio = d["_ai_overview_followup"].get("ai_overview") or {}
     aio_text = serpapi_aio_text(aio)
     parts = ["[AI Overview]\n" + aio_text] if aio_text else []
@@ -429,6 +445,9 @@ PARTS = {"serpapi": serpapi_parts, "tavily": tavily_parts, "exa": exa_parts, "pa
          "brave": brave_parts, "perplexity": perplexity_parts, "perplexity-nodata": perplexity_parts,
          "firecrawl": firecrawl_parts, "keenable": keenable_parts, "keenable-nodata": keenable_parts}
 READ_ONLY.update({f"{p}-reread": (p, f) for p, f in PARTS.items()})
+# serpapi-single-reread: raw/serpapi without the second AI Overview request. No other API gets a
+# second request, so this is the SerpApi result with one request per search.
+READ_ONLY["serpapi-single-reread"] = ("serpapi", lambda d: serpapi_parts(d, followup=False))
 # cloro-other: the saved cloro results of a different question (the next id in raw/cloro).
 # A reader that uses only the search results must reply NOT FOUND. Each correct
 # answer comes from the reader's own memory.
@@ -440,7 +459,40 @@ def other_id(source, qid):
     return ids[(ids.index(qid) + 1) % len(ids)] if qid in ids else qid
 
 
+SUPPORT_PROMPT = """You check whether an answer comes from the search results below, not from memory.
+Answer SUPPORTED if the results state the answer (in any wording) and state at least one fact that links it to the question. Not every clue has to be confirmed.
+Answer NOT_SUPPORTED if the answer is not in the results, or if nothing in the results links it to the question. Do not judge whether the answer is true.
+Reply with one word: SUPPORTED or NOT_SUPPORTED.
+
+Question: {question}
+Answer: {answer}
+
+Search results:
+{context}"""
+
+
+def claude(model, prompt):
+    """One headless Claude Code call with no tools. ANTHROPIC_* variables are removed, so
+    the call never uses an API key."""
+    env = {k: v for k, v in os.environ.items() if not k.startswith("ANTHROPIC")}
+    cmd = ["claude", "-p", "--model", model, "--tools", "", "--strict-mcp-config", "--setting-sources", "",
+           "--no-session-persistence", "--output-format", "json", "--system-prompt", "You follow the instructions exactly."]
+    for k in range(3):
+        p = subprocess.run(cmd, input=prompt, capture_output=True, text=True, timeout=300, env=env, cwd=OUT)
+        try:
+            d = json.loads(p.stdout)
+        except ValueError:
+            d = None
+        if d and not d.get("is_error"):
+            return (d.get("result") or "").strip(), (d.get("usage") or {}).get("input_tokens")
+        if k == 2:
+            raise RuntimeError(str(d.get("result") if d else p.stderr or p.stdout)[:200])
+        time.sleep(30 * (k + 1))
+
+
 def llm(model, prompt):
+    if model.startswith("claude"):
+        return claude(model, prompt)
     # On a rate limit (429), wait longer before the next try. A failed LLM call makes the
     # next pass search again, which costs a second search call.
     for k in range(5):
@@ -462,13 +514,17 @@ def llm(model, prompt):
     return choice["message"]["content"].strip(), (d.get("usage") or {}).get("prompt_tokens")
 
 
+def with_freshqa_rules(template):
+    return template.replace("Grade the predicted answer of this new question", FRESHQA_GRADER_RULES + "Grade the predicted answer of this new question", 1)
+
+
 def grade(question, target, predicted):
     out, _ = llm(GRADER_MODEL, GRADER_TEMPLATE.format(question=question, target=target, predicted_answer=predicted))
-    m = re.search(r"(A|B|C)", out)
-    return {"A": "CORRECT", "B": "INCORRECT", "C": "NOT_ATTEMPTED"}[m.group(0) if m else "C"]
+    last = re.findall(r"\b([ABC])\b", (out.strip().splitlines() or [""])[-1])
+    return {"A": "CORRECT", "B": "INCORRECT", "C": "NOT_ATTEMPTED"}[last[-1] if last else "C"]
 
 
-def run_one(provider, row, search_only, reader_prompt):
+def run_one(provider, row, search_only, reader_prompt, support_check=False):
     rec = {"id": row["original_index"], "provider": provider, "problem": row["problem"], "gold": row["answer"], "topic": row["topic"]}
     if provider in READ_ONLY:
         source, to_parts = READ_ONLY[provider]
@@ -497,6 +553,9 @@ def run_one(provider, row, search_only, reader_prompt):
     try:
         answer, prompt_tokens = llm(READER_MODEL, reader_prompt.format(question=row["problem"], context=context))
         rec.update(answer=answer, grade=grade(row["problem"], row["answer"], answer), context_chars=len(context), reader_prompt_tokens=prompt_tokens, error=None)
+        if support_check:
+            verdict = "" if rec["grade"] != "CORRECT" else llm(GRADER_MODEL, SUPPORT_PROMPT.format(question=row["problem"], answer=answer, context=context))[0]
+            rec["supported"] = rec["grade"] == "CORRECT" and "NOT_SUPPORTED" not in verdict.upper()
     except Exception as e:  # an LLM failure is ours, not the provider's
         rec.update(answer=None, grade="LLM_ERROR", error=repr(e))
     return rec
@@ -595,6 +654,7 @@ def main():
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--search-only", action="store_true", help="measure latency only, no LLM calls")
     ap.add_argument("--summary", action="store_true", help="print the results table and exit")
+    ap.add_argument("--support-check", action="store_true", help="check each correct answer against the search results (the field \"supported\")")
     ap.add_argument("--out", help="run folder (default: outputs/search-benchmark-<dataset>-<today>)")
     ap.add_argument("--max-context-chars", type=int, default=MAX_CONTEXT_CHARS,
                     help=f"cap on the reader context (default {MAX_CONTEXT_CHARS}, the same for every provider)")
@@ -608,6 +668,9 @@ def main():
     reader_prompt = READER_PROMPT
     if args.dataset != "simpleqa":
         reader_prompt = DATED_PREFIX.format(today=AS_OF) + (FALSE_PREMISE_LINE if args.dataset == "freshqa" else "") + READER_PROMPT
+    if args.dataset == "freshqa":
+        global GRADER_TEMPLATE
+        GRADER_TEMPLATE = with_freshqa_rules(GRADER_TEMPLATE)
     if args.summary:
         return summarize()
     providers = args.providers.split(",") if args.providers else []
@@ -626,7 +689,7 @@ def main():
     print(f"{len(tasks)} calls to run", file=sys.stderr)
 
     with cf.ThreadPoolExecutor(args.workers) as ex:
-        for k, rec in enumerate(ex.map(lambda t: run_one(t[0], t[1], args.search_only, reader_prompt), tasks), 1):
+        for k, rec in enumerate(ex.map(lambda t: run_one(t[0], t[1], args.search_only, reader_prompt, args.support_check), tasks), 1):
             files[rec["provider"]].write(json.dumps(rec, ensure_ascii=False) + "\n")
             files[rec["provider"]].flush()
             if k % 25 == 0:

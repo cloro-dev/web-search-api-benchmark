@@ -1,7 +1,13 @@
 """Grade the saved answers of a run again with a different grader model.
 
 Usage: regrade.py <run folder> <out folder> <grader model> [--workers 8] [--n N]
+                   [--dataset freshqa] [--support-check] [--ids <file>]
        regrade.py --summary <out folder>
+
+--dataset freshqa adds the FreshQA grader rules of benchmark.py. --support-check checks
+each correct answer against the search results again (the field "supported"); it rebuilds
+the context from <run folder>/raw, as benchmark.py does. --ids regrades only the ids in the
+file (one per line) and copies the other rows.
 
 Reads <run folder>/results/<provider>.jsonl and writes
 <out folder>/results/<provider>.jsonl with the new grade in "grade" and the
@@ -45,6 +51,15 @@ def summary(out):
         print(f"| {g} | " + " | ".join(str(sum(x == g and y == h for x, y in pairs)) for h in grades) + " |")
 
 
+def supported(provider, r):
+    """The support check of benchmark.run_one, on the saved search results of the row."""
+    source, to_parts = benchmark.READ_ONLY[provider]
+    parts, _ = to_parts(json.load(open(os.path.join(benchmark.OUT, "raw", source, f"{r['id']}.json"))))
+    context = "\n\n".join(f"[{i}] {p}" for i, p in enumerate(parts, 1))[:benchmark.MAX_CONTEXT]
+    verdict = benchmark.llm(benchmark.GRADER_MODEL, benchmark.SUPPORT_PROMPT.format(question=r["problem"], answer=r["answer"], context=context))[0]
+    return "NOT_SUPPORTED" not in verdict.upper()
+
+
 def main():
     args = sys.argv[1:]
     if args[0] == "--summary":
@@ -53,6 +68,11 @@ def main():
     workers = int(args[args.index("--workers") + 1]) if "--workers" in args else 8
     n = int(args[args.index("--n") + 1]) if "--n" in args else None
     benchmark.GRADER_MODEL = model
+    if "--dataset" in args and args[args.index("--dataset") + 1] == "freshqa":
+        benchmark.GRADER_TEMPLATE = benchmark.with_freshqa_rules(benchmark.GRADER_TEMPLATE)
+    support = "--support-check" in args
+    only = set(open(args[args.index("--ids") + 1]).read().split()) if "--ids" in args else None
+    benchmark.OUT = os.path.abspath(run)  # the raw responses for the support check
     os.makedirs(os.path.join(out, "results"), exist_ok=True)
     for path in sorted(glob.glob(os.path.join(run, "results", "*.jsonl"))):
         rows = list({r["id"]: r for r in map(json.loads, open(path))}.values())[:n]
@@ -60,12 +80,17 @@ def main():
         done = {r["id"] for r in map(json.loads, open(dest)) if r["grade"] != "LLM_ERROR"} if os.path.exists(dest) else set()
         todo = [r for r in rows if r["id"] not in done]
 
+        provider = os.path.basename(path)[:-6]
+
         def regrade(r):
             r = {**r, "grade_first": r.get("grade")}
-            if r.get("answer") is None:
+            if r.get("answer") is None or (only is not None and r["id"] not in only):
                 return r
             try:
                 r["grade"] = benchmark.grade(r["problem"], r["gold"], r["answer"])
+                if support:
+                    r["supported"] = r["grade"] == "CORRECT" and (
+                        r.get("supported") if r["grade_first"] == "CORRECT" and "supported" in r else supported(provider, r))
             except Exception as e:
                 r.update(grade="LLM_ERROR", error=repr(e))
             return r
