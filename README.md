@@ -486,11 +486,14 @@ its results.
   its answers. A reader that adds facts from memory does not affect every API
   the same way. It lifts the APIs whose results hold part of the answer.
 - **One model reads and grades.** Haiku grades answers that Haiku wrote. With
-  the changed grader prompt, it agreed with `gemini-pro-latest` on 98.3% to
-  98.6% of the FreshQA answers we compared.
-- **The support check is noisy when it rejects.** On a second run, 17 of 34
-  rejected SimpleQA answers of the top five APIs were SUPPORTED, and 0 of 150
-  accepted answers changed. See the
+  the changed grader prompt, its published grades agreed with
+  `gemini-pro-latest` on 97.8% of 716 FreshQA answers (98.3% to 98.6% in a
+  test run of the same prompt). Each grade is in
+  [`checks/freshqa-grader-agreement.jsonl`](runs/haiku-2026-11/checks/freshqa-grader-agreement.jsonl).
+- **The support check is noisy when it rejects.** In two more runs, 17 and
+  21 of 34 rejected SimpleQA answers of the top five APIs were SUPPORTED,
+  and 0 of 150 accepted answers changed. The second run is in
+  [`checks/simpleqa-support-recheck.jsonl`](runs/haiku-2026-11/checks/simpleqa-support-recheck.jsonl). See the
   [Haiku report](runs/haiku-2026-11/report.md#correct-and-supported).
 - **Some pages copy benchmark answers.** Every API returned a page of a
   benchmark dataset on some questions. On SimpleQA Verified the first six
